@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ClassesService } from './classes.service';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -31,13 +32,13 @@ export class ClassesController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: string): Promise<Class> {
+  findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Class> {
     return this.classesService.findOne(id);
   }
 
   @Put(':id')
   update(
-    @Param('id', ParseIntPipe) id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateClassDto: UpdateClassDto,
   ): Promise<Class> {
     return this.classesService.update(id, updateClassDto);

@@ -1,19 +1,43 @@
+// src/pages/Auth/LoginPage.jsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore"; // Zustand store
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  // Zustand: lấy hàm login và trạng thái loading
+  const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // CHỈ FRONTEND → click là vào luôn, không check gì cả
-    navigate("/");
+    setError("");
+
+    const formData = new FormData(e.target);
+    const username = formData.get("username");
+    const password = formData.get("password");
+
+    try {
+      // Gọi API login thật từ NestJS → lưu token + user vào Zustand + localStorage
+      await login(username, password);
+      navigate("/"); // Thành công → vào dashboard
+    } catch (err) {
+      setError(err.message || "Sai tài khoản hoặc mật khẩu!");
+    }
   };
 
   return (
@@ -28,7 +52,7 @@ export default function LoginPage() {
           <div className="text-center">
             <CardTitle className="text-3xl font-bold">Chào mừng quay lại</CardTitle>
             <CardDescription className="text-base mt-2">
-              Hệ thống quản lý sinh viên
+              Hệ thống quản lý sinh viên - Đồ án cuối kỳ
             </CardDescription>
           </div>
         </CardHeader>
@@ -36,22 +60,29 @@ export default function LoginPage() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-base">Email</Label>
+              <Label htmlFor="username" className="text-base">
+                Tên đăng nhập
+              </Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="admin@qlsv.edu.vn"
-                defaultValue="admin@qlsv.edu.vn"
+                id="username"
+                name="username"
+                type="text"
+                placeholder="admin"
+                defaultValue="admin"
                 className="h-12 text-base"
                 required
+                autoFocus
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-base">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-base">
+                Mật khẩu
+              </Label>
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Nhập mật khẩu"
                   defaultValue="123456"
@@ -63,25 +94,50 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground transition"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full h-12 text-lg font-semibold">
-              <LogIn className="mr-2 h-5 w-5" />
-              Đăng nhập ngay
+            {/* Hiển thị lỗi */}
+            {error && (
+              <p className="text-sm text-destructive text-center font-medium">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full h-12 text-lg font-semibold"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Đang đăng nhập...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Đăng nhập ngay
+                </>
+              )}
             </Button>
           </form>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-3 pb-8">
-          <p className="text-sm text-muted-foreground text-center">
-            Demo: <span className="font-medium">admin@qlsv.edu.vn</span> /{" "}
+        <CardFooter className="flex flex-col space-y-3 pb-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Demo: <span className="font-medium">admin</span> /{" "}
             <span className="font-medium">123456</span>
           </p>
           <p className="text-xs text-muted-foreground">
-            Đồ án cuối kỳ - Nhóm ...
+            Đồ án cuối kỳ • Nhóm ...
           </p>
         </CardFooter>
       </Card>

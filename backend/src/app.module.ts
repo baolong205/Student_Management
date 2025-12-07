@@ -1,23 +1,26 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { databaseConfig } from './config/database.config';
-import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
+import { ClassesModule } from './classes/classes.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,       // để dùng ConfigService ở mọi nơi không cần import lại
+      isGlobal: true,
       envFilePath: '.env',
     }),
+
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: databaseConfig,
       inject: [ConfigService],
     }),
+
     UsersModule,
-    // các module khác của bạn...
+    ClassesModule,
   ],
 })
 export class AppModule {}
