@@ -1,4 +1,4 @@
-// src/students/entities/student.entity.ts
+
 import {
   Entity,
   PrimaryGeneratedColumn,

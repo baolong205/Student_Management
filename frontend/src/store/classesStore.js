@@ -1,12 +1,13 @@
-// src/store/classesStore.js
+
 import { create } from "zustand";
-import { classesApi } from "@/api/classesApi";
+import { classesApi } from "../api/classesApi";
 import toast from "react-hot-toast";
 
 export const useClassesStore = create((set) => ({
   classes: [],
   loading: false,
   error: null,
+
 
   // Lấy tất cả lớp
   fetchClasses: async () => {

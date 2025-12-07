@@ -28,7 +28,7 @@ export class StudentService {
 
   findAll(): Promise<Student[]> {
     return this.studentsRepository.find({
-      relations: ['classes'],
+      relations: ['class'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -36,7 +36,7 @@ export class StudentService {
   async findOne(id: string): Promise<Student> {
     const student = await this.studentsRepository.findOne({
       where: { id },
-      relations: ['classes'],
+      relations: ['class'],
     });
     if (!student) {
       throw new NotFoundException(`Sinh viên với ID ${id} không tồn tại`);
