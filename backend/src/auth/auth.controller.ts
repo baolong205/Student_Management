@@ -1,20 +1,20 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { AuthService } from './auth.service';
+// src/auth/auth.controller.ts
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service'; 
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto'; 
 
 @Controller('auth')
 export class AuthController {
-  // 1. Phải có Constructor để Inject AuthService vào Class
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  async register(@Body() registerDto: any) {
+  async register(@Body() registerDto: RegisterDto) {
     return await this.authService.register(registerDto);
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK)
-  async login(@Body() loginDto: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+  async login(@Body() loginDto: LoginDto) {
     return await this.authService.login(loginDto.username, loginDto.password);
   }
 }
