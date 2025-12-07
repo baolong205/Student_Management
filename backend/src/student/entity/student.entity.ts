@@ -7,7 +7,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Class } from '../../classes/entities/class.entity';
+import { Class } from '../../classes/entity/classes.entity';
 
 @Entity('students')
 export class Student {
@@ -35,7 +35,7 @@ export class Student {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  // Quan hệ với Class (một sinh viên thuộc một lớp)
+
   @Column({ name: 'class_id', nullable: true })
   classId?: string;
 

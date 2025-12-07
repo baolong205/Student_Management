@@ -14,6 +14,7 @@ export class StudentService {
   ) {}
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
+    //Check xem co trung sinh vien khong
     const existing = await this.studentsRepository.findOne({
       where: { email: createStudentDto.email },
     });
@@ -27,7 +28,7 @@ export class StudentService {
 
   findAll(): Promise<Student[]> {
     return this.studentsRepository.find({
-      relations: ['class'],
+      relations: ['classes'],
       order: { createdAt: 'DESC' },
     });
   }
@@ -35,7 +36,7 @@ export class StudentService {
   async findOne(id: string): Promise<Student> {
     const student = await this.studentsRepository.findOne({
       where: { id },
-      relations: ['class'],
+      relations: ['classes'],
     });
     if (!student) {
       throw new NotFoundException(`Sinh viên với ID ${id} không tồn tại`);

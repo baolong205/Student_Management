@@ -1,15 +1,9 @@
 // src/users/users.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './user.entity';
-
-// Định nghĩa DTO (Data Transfer Object) để nhận dữ liệu từ bên ngoài
-interface CreateUserDto {
-  username: string;
-  password: string;
-  role?: 'admin' | 'viewer';
-}
+import { User } from './entity/user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -19,21 +13,38 @@ export class UsersService {
   ) {}
 
   /**
-   * Tạo và lưu người dùng mới vào cơ sở dữ liệu.
-   * LƯU Ý: Hàm @BeforeInsert() trong entity sẽ tự động xử lý hash mật khẩu và tạo UUID.
+   * Tạo người dùng mới
+   * Mật khẩu sẽ được tự động hash nhờ @BeforeInsert() trong entity
    */
-  async createUser(userData: CreateUserDto): Promise<User> {
-    // 1. Tạo một instance của User entity
-    const newUser = this.usersRepository.create(userData);
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const { username } = createUserDto;
 
-    // 2. Lưu instance vào DB. TypeORM sẽ tự động chạy @BeforeInsert
-    // (tạo ID, hash mật khẩu) trước khi lưu.
-    return this.usersRepository.save(newUser);
+    // Kiểm tra username đã tồn tại chưa (rất quan trọng cho đồ án!)
+    const existingUser = await this.usersRepository.findOne({
+      where: { username },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('Tên đăng nhập đã tồn tại!');
+    }
+
+    // Tạo user mới → TypeORM sẽ tự chạy @BeforeInsert (hash password + tạo UUID)
+    const newUser = this.usersRepository.create(createUserDto);
+
+    return await this.usersRepository.save(newUser);
   }
 
-  // Bạn có thể thêm các hàm tìm kiếm, v.v. ở đây...
-  async findOneByUsername(username: string): Promise<User | undefined> {
-    const user = await this.usersRepository.findOne({ where: { username } });
-    return user ?? undefined;
+  // Tìm user theo username (dùng cho login)
+  async findOneByUsername(username: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+      where: { username },
+    });
+  }
+
+  // Tìm user theo ID (nếu cần)
+  async findOneById(id: string): Promise<User | null> {
+    return await this.usersRepository.findOne({
+      where: { id },
+    });
   }
 }

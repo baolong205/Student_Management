@@ -1,4 +1,4 @@
-// src/config/database.config.ts
+
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 export const databaseConfig = (): TypeOrmModuleOptions => {
@@ -18,6 +18,6 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
     database,
     autoLoadEntities: true,
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
-    logging: process.env.DB_LOGGING === 'true',
+    
   };
 };
