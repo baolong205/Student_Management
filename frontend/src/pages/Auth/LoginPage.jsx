@@ -3,99 +3,86 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "admin@qlsv.edu.vn",
-    password: "123456",
-  });
-
-  const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Giả lập gọi API login (sau này thay bằng axios)
-    setTimeout(() => {
-      login({ name: "Nguyễn Văn Admin", email: formData.email }, "fake-jwt-token");
-      setLoading(false);
-      navigate("/");
-    }, 1500);
+    // CHỈ FRONTEND → click là vào luôn, không check gì cả
+    navigate("/");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:to-gray-800 px-4">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="space-y-1">
-          <div className="flex justify-center mb-4">
-            <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-3xl font-bold">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:to-black px-4">
+      <Card className="w-full max-w-md shadow-2xl border-0">
+        <CardHeader className="space-y-6 pb-8">
+          <div className="flex justify-center">
+            <div className="w-24 h-24 bg-primary rounded-3xl flex items-center justify-center text-primary-foreground text-4xl font-black shadow-lg">
               QLSV
             </div>
           </div>
-          <CardTitle className="text-2xl text-center">Đăng nhập hệ thống</CardTitle>
-          <CardDescription className="text-center">
-            Quản lý sinh viên - Đồ án cuối kỳ
-          </CardDescription>
+          <div className="text-center">
+            <CardTitle className="text-3xl font-bold">Chào mừng quay lại</CardTitle>
+            <CardDescription className="text-base mt-2">
+              Hệ thống quản lý sinh viên
+            </CardDescription>
+          </div>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-base">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="admin@qlsv.edu.vn"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                defaultValue="admin@qlsv.edu.vn"
+                className="h-12 text-base"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password" className="text-base">Mật khẩu</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="Nhập mật khẩu"
+                  defaultValue="123456"
+                  className="h-12 text-base pr-12"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+                  className="absolute right-3 top-3.5 text-muted-foreground hover:text-foreground transition"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang đăng nhập...
-                </>
-              ) : (
-                "Đăng nhập"
-              )}
+            <Button type="submit" size="lg" className="w-full h-12 text-lg font-semibold">
+              <LogIn className="mr-2 h-5 w-5" />
+              Đăng nhập ngay
             </Button>
           </form>
         </CardContent>
 
-        <CardFooter className="flex flex-col space-y-2 text-sm text-muted-foreground">
-          <p className="text-center">Email: admin@qlsv.edu.vn</p>
-          <p className="text-center">Mật khẩu: 123456</p>
+        <CardFooter className="flex flex-col space-y-3 pb-8">
+          <p className="text-sm text-muted-foreground text-center">
+            Demo: <span className="font-medium">admin@qlsv.edu.vn</span> /{" "}
+            <span className="font-medium">123456</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Đồ án cuối kỳ - Nhóm ...
+          </p>
         </CardFooter>
       </Card>
     </div>
