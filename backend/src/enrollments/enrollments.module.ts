@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnrollmentsService } from './enrollments.service';
-import { Enrollment } from './enrollment.entity';
+import { Enrollment } from './entity/enrollment.entity';
 import { EnrollmentsController } from './enrollments.controller';
 
 @Module({
