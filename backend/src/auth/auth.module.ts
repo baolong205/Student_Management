@@ -7,10 +7,10 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    UsersModule, // Đảm bảo đã export UsersService từ module này
+    UsersModule,
     JwtModule.register({
-      secret: 'MY_SECRET_KEY', // Nên lấy từ .env
-      signOptions: { expiresIn: '3600s' }, // Token hết hạn sau 1 giờ
+      secret: 'MY_SECRET_KEY', 
+      signOptions: { expiresIn: '3600s' }, 
     }),
   ],
   providers: [AuthService],

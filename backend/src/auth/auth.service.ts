@@ -8,7 +8,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   // 1. Hàm register phải nằm trong class
   async register(registerDto: any) {
@@ -24,7 +24,7 @@ export class AuthService {
   // 2. Hàm login phải nằm trong class và sửa lỗi Strict Null Check
   async login(username: string, pass: string) {
     const user = await this.usersService.findOneByUsername(username);
-    
+
     // Kiểm tra user tồn tại
     if (!user) {
       throw new UnauthorizedException('Tài khoản không tồn tại');
@@ -37,14 +37,19 @@ export class AuthService {
     }
 
     // Tạo JWT Payload
-    const payload = { 
-      username: user.username, 
-      sub: user.id, 
-      role: user.role 
+    const payload = {
+      username: user.username,
+      sub: user.id,
+      role: user.role
     };
 
     return {
       access_token: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      }
     };
   }
 }
