@@ -32,7 +32,7 @@ export default function LoginPage() {
     const password = formData.get("password");
 
     try {
-      // Gọi API login thật từ NestJS → lưu token + user vào Zustand + localStorage
+      
       await login(username, password);
       navigate("/"); // Thành công → vào dashboard
     } catch (err) {

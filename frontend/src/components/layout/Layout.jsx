@@ -2,8 +2,9 @@ import Footer from "./Footer";
 import Header from "./Header";
 import Sidebar from "./SideBar";
 import { Toaster } from "react-hot-toast";
+import { Outlet } from "react-router-dom";
 
-export default function Layout({ children }) {
+export default function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Toaster position="top-right" />
@@ -16,11 +17,11 @@ export default function Layout({ children }) {
         <Sidebar />
 
         <main className="flex-1 p-8 bg-muted/30 overflow-auto">
-          {children}
+          <Outlet />
         </main>
       </div>
 
-      {/* Footer đặt đúng vị trí */}
+      {/* Footer */}
       <Footer />
     </div>
   );
