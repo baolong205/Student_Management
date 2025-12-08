@@ -2,7 +2,7 @@ import api from "./axios";
 
 export const studentApi = {
   createStudent: async (data) => {
-    const response = await api.post('/students', { data })
+    const response = await api.post('/students', data)
     return response.data
   },
   getAllStudent: async () => {
