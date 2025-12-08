@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { Class } from '../../classes/entity/classes.entity';
 import { Enrollment } from '../../enrollments/entity/enrollment.entity';
-import { OneToMany } from 'typeorm';
 @Entity('students')
 export class Student {
   @PrimaryGeneratedColumn('uuid')
