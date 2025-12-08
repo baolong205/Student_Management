@@ -1,6 +1,9 @@
 
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { Student } from '../student/entity/student.entity';
+import { Enrollment } from '../enrollments/entity/enrollment.entity';
 
+import { Subject } from '../subjects/entity/subject.entity';
 export const databaseConfig = (): TypeOrmModuleOptions => {
   // Lấy giá trị và có default fallback (tránh undefined)
   const host = process.env.DB_HOST ?? 'localhost';
@@ -16,6 +19,7 @@ export const databaseConfig = (): TypeOrmModuleOptions => {
     username,
     password,
     database,
+    entities: [Student, Enrollment, Subject], 
     autoLoadEntities: true,
     synchronize: process.env.DB_SYNCHRONIZE === 'true',
     

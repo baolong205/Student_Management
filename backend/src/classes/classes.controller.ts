@@ -9,7 +9,7 @@ import {
   Put,
   HttpCode,
   HttpStatus,
-  ParseIntPipe,
+  
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { ClassesService } from './classes.service';

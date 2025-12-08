@@ -9,8 +9,8 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Class } from '../../classes/entity/classes.entity';
-import { Enrollment } from 'src/enrollments/enrollment.entity';
-
+import { Enrollment } from '../../enrollments/entity/enrollment.entity';
+import { OneToMany } from 'typeorm';
 @Entity('students')
 export class Student {
   @PrimaryGeneratedColumn('uuid')
@@ -44,6 +44,6 @@ export class Student {
   @ManyToOne(() => Class, (cls) => cls.students, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'class_id' })
   class?: Class;
-  @OneToMany(() => Enrollment, (enrollment) => enrollment.student, { cascade: true })
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.student)
   enrollments: Enrollment[];
 }
