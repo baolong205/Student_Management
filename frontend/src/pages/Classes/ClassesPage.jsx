@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Edit, Trash2, Loader2, Users } from "lucide-react";
+import { Plus, Edit2, Trash2, Users, Loader2 } from "lucide-react";
 import { useClassesStore } from "@/store/classesStore";
 import toast from "react-hot-toast";
 
@@ -19,174 +19,147 @@ export default function ClassesPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingClass, setEditingClass] = useState(null);
 
-  // Lấy danh sách lớp khi component mount
   useEffect(() => {
     fetchClasses();
-  }, [fetchClasses]);
+  }, []);
 
-  const handleAddClick = () => {
-    setEditingClass(null);
-    setOpenDialog(true);
-  };
-
-  const handleEdit = (cls) => {
-    setEditingClass(cls);
-    setOpenDialog(true);
-  };
-
-  const handleClassSubmit = async (classData) => {
-    try {
-      if (classData.id) {
-        // Update existing class
-        await updateClass(classData.id, {
-          name: classData.name,
-          year: classData.year,
-          maxStudents: classData.maxStudents,
-        });
-        toast.success("Cập nhật lớp thành công!");
-      } else {
-        // Create new class
-        await createClass({
-          name: classData.name,
-          year: classData.year,
-          maxStudents: classData.maxStudents,
-        });
-        toast.success("Thêm lớp thành công!");
-      }
-      setOpenDialog(false);
-    } catch (error) {
-      toast.error("Thao tác thất bại!");
-      console.error("Error:", error);
+  const handleSuccess = async (data) => {
+    if (data.id) {
+      await updateClass(data.id, data);
+      toast.success("Cập nhật lớp thành công!");
+    } else {
+      await createClass(data);
+      toast.success("Thêm lớp thành công!");
     }
+    setOpenDialog(false);
   };
 
   const handleDelete = async (id) => {
-    if (confirm("Bạn có chắc muốn xóa lớp này? Hành động này không thể hoàn tác.")) {
-      try {
-        await deleteClass(id);
-        toast.success("Xóa lớp thành công!");
-      } catch (error) {
-        toast.error("Xóa lớp thất bại!");
-        console.error("Error:", error);
-      }
+    if (!confirm("Xóa lớp này? Sinh viên trong lớp sẽ bị ảnh hưởng!")) return;
+    try {
+      await deleteClass(id);
+      toast.success("Xóa thành công");
+    } catch {
+      toast.error("Xóa thất bại");
     }
   };
 
-  // Tổng số sinh viên có thể chứa
-  const totalCapacity = classes.reduce((sum, cls) => sum + cls.maxStudents, 0);
-
   return (
-    <div className="p-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Quản lý lớp học</h1>
-          <p className="text-muted-foreground mt-2">
-            Tổng số lớp: {classes.length} | Sức chứa tối đa: {totalCapacity} sinh viên
-          </p>
-        </div>
-
-        <Button onClick={handleAddClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm lớp mới
-        </Button>
-      </div>
-
-      {/* LOADING STATE */}
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="text-center">
-            <Loader2 className="h-10 w-10 animate-spin mx-auto text-blue-600" />
-            <p className="mt-4 text-muted-foreground">Đang tải danh sách lớp...</p>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Quản lý lớp học</h1>
+            <p className="text-gray-600 mt-2">
+              Tổng <strong>{classes.length}</strong> lớp • 
+              Đang hoạt động <strong>{classes.filter(c => (c.currentStudents || 0) > 0).length}</strong> lớp • 
+              Tổng sức chứa <strong>{classes.reduce((a, c) => a + c.maxStudents, 0)}</strong> sinh viên
+            </p>
           </div>
-        </div>
-      ) : classes.length === 0 ? (
-        /* EMPTY STATE */
-        <div className="text-center py-20 border-2 border-dashed rounded-lg">
-          <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-medium mb-2">Chưa có lớp học nào</h3>
-          <p className="text-muted-foreground mb-6">
-            Bắt đầu bằng cách thêm lớp học đầu tiên của bạn
-          </p>
-          <Button onClick={handleAddClick} size="lg">
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm lớp đầu tiên
+          <Button size="lg" onClick={() => { setEditingClass(null); setOpenDialog(true); }}>
+            <Plus className="w-5 h-5 mr-2" /> Thêm lớp mới
           </Button>
         </div>
-      ) : (
-        /* CLASSES TABLE */
-        <div className="border rounded-lg overflow-hidden">
-          <Table>
-            <TableHeader className="bg-slate-50">
-              <TableRow>
-                <TableHead className="font-semibold">STT</TableHead>
-                <TableHead className="font-semibold">Tên lớp</TableHead>
-                <TableHead className="font-semibold">Năm học</TableHead>
-                <TableHead className="font-semibold">Sĩ số tối đa</TableHead>
-                <TableHead className="font-semibold text-right">Hành động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {classes.map((cls, index) => (
-                <TableRow key={cls.id} className="hover:bg-slate-50">
-                  <TableCell className="font-medium">{index + 1}</TableCell>
-                  <TableCell className="font-medium">
-                    <div>
-                      <div className="font-semibold text-blue-600">{cls.name}</div>
 
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
-                      {cls.year}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      <div className="w-32 bg-slate-200 rounded-full h-2 mr-3">
-                        <div
-                          className="bg-green-500 h-2 rounded-full"
-                          style={{ width: `${Math.min(100, (cls.maxStudents / 100) * 100)}%` }}
-                        ></div>
-                      </div>
-                      <span className="font-semibold">{cls.maxStudents}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(cls)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Sửa
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(cls.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Xóa
-                      </Button>
-                    </div>
-                  </TableCell>
+        {/* Loading & Empty State */}
+        {loading ? (
+          <div className="flex flex-col items-center py-20">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            <p className="mt-4 text-gray-500">Đang tải danh sách lớp...</p>
+          </div>
+        ) : classes.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed rounded-xl">
+            <Users className="w-20 h-20 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Chưa có lớp học nào</h3>
+            <Button size="lg" onClick={() => setOpenDialog(true)}>
+              <Plus className="w-5 h-5 mr-2" /> Thêm lớp đầu tiên
+            </Button>
+          </div>
+        ) : (
+          /* Table */
+          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <Table>
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead className="w-16">STT</TableHead>
+                  <TableHead>Lớp</TableHead>
+                  <TableHead>Ngành</TableHead>
+                  <TableHead>Khóa</TableHead>
+                  <TableHead>Năm thứ</TableHead>
+                  <TableHead className="text-center">Sĩ số</TableHead>
+                  <TableHead className="text-right w-32">Hành động</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-      <AddClassDialog
-        open={openDialog}
-        onOpenChange={setOpenDialog}
-        editingClass={editingClass}
-        onSuccess={handleClassSubmit}
-      />
+              </TableHeader>
+              <TableBody>
+                {classes.map((cls, i) => {
+                  const filled = cls.currentStudents || 0;
+                  const percent = cls.maxStudents ? Math.round((filled / cls.maxStudents) * 100) : 0;
+                  const isFull = percent >= 100;
 
+                  return (
+                    <TableRow key={cls.id} className="hover:bg-gray-50">
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell className="font-bold text-blue-700">{cls.name}</TableCell>
+                      <TableCell className="text-gray-700">{cls.major}</TableCell>
+                      <TableCell>
+                        <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                          K{cls.enrollmentYear.toString().slice(-2)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-center font-bold text-lg">
+                        {cls.currentYear}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-32 bg-gray-200 rounded-full h-3">
+                            <div
+                              className={`h-3 rounded-full transition-all ${
+                                isFull ? 'bg-red-500' : percent >= 80 ? 'bg-orange-500' : 'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(100, percent)}%` }}
+                            />
+                          </div>
+                          <span className={`font-bold ${isFull ? 'text-red-600' : ''}`}>
+                            {filled} / {cls.maxStudents}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingClass(cls);
+                            setOpenDialog(true);
+                          }}
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600"
+                          onClick={() => handleDelete(cls.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+
+        <AddClassDialog
+          open={openDialog}
+          onOpenChange={setOpenDialog}
+          editingClass={editingClass}
+          onSuccess={handleSuccess}
+        />
+      </div>
     </div>
-
   );
 }
