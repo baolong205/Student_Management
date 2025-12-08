@@ -1,15 +1,7 @@
-// src/pages/Classes/ClassesPage.jsx
-import { useEffect, useState } from "react";
+// src/pages/ClassesPage.jsx
+import { useState, useEffect } from "react";
+import AddClassDialog from "../Classes/AddClassDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -18,159 +10,183 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Plus, Edit, Trash2, Loader2, Users } from "lucide-react";
 import { useClassesStore } from "@/store/classesStore";
-import { Loader2, Plus, Trash2, Edit, Save, X } from "lucide-react";
-import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 export default function ClassesPage() {
   const { classes, loading, fetchClasses, createClass, updateClass, deleteClass } = useClassesStore();
-  const { register, handleSubmit, reset, setValue } = useForm();
-  const [open, setOpen] = useState(false);
-  const [editingId, setEditingId] = useState(null); //
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editingClass, setEditingClass] = useState(null);
+
+  // Lấy danh sách lớp khi component mount
   useEffect(() => {
     fetchClasses();
   }, [fetchClasses]);
 
-  // Thêm lớp mới
-  const onSubmit = async (data) => {
+  const handleAddClick = () => {
+    setEditingClass(null);
+    setOpenDialog(true);
+  };
+
+  const handleEdit = (cls) => {
+    setEditingClass(cls);
+    setOpenDialog(true);
+  };
+
+  const handleClassSubmit = async (classData) => {
     try {
-      if (editingId) {
-        await updateClass(editingId, {
-          name: data.name,
-          year: data.year,
-          maxStudents: Number(data.maxStudents),
+      if (classData.id) {
+        // Update existing class
+        await updateClass(classData.id, {
+          name: classData.name,
+          year: classData.year,
+          maxStudents: classData.maxStudents,
         });
         toast.success("Cập nhật lớp thành công!");
-        setEditingId(null);
       } else {
+        // Create new class
         await createClass({
-          name: data.name,
-          year: data.year,
-          maxStudents: Number(data.maxStudents),
+          name: classData.name,
+          year: classData.year,
+          maxStudents: classData.maxStudents,
         });
         toast.success("Thêm lớp thành công!");
       }
-      reset();
-      setOpen(false);
-    } catch (err) {
-      console.log("Loi",err)
+      setOpenDialog(false);
+    } catch (error) {
       toast.error("Thao tác thất bại!");
+      console.error("Error:", error);
     }
   };
 
-  // Mở form sửa
-  const handleEdit = (cls) => {
-    setEditingId(cls.id);
-    setValue("name", cls.name);
-    setValue("year", cls.year);
-    setValue("maxStudents", cls.maxStudents);
-    setOpen(true);
-  };
-
-  // Xóa lớp
   const handleDelete = async (id) => {
-    if (confirm("Bạn có chắc muốn xóa lớp này?")) {
+    if (confirm("Bạn có chắc muốn xóa lớp này? Hành động này không thể hoàn tác.")) {
       try {
         await deleteClass(id);
         toast.success("Xóa lớp thành công!");
-      } catch (err) {
-        toast.error("Xóa thất bại!");
+      } catch (error) {
+        toast.error("Xóa lớp thất bại!");
+        console.error("Error:", error);
       }
     }
   };
 
-  // Đóng form → reset trạng thái
-  const handleClose = () => {
-    setOpen(false);
-    setEditingId(null);
-    reset();
-  };
+  // Tổng số sinh viên có thể chứa
+  const totalCapacity = classes.reduce((sum, cls) => sum + cls.maxStudents, 0);
 
   return (
     <div className="p-6">
+      {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Quản lý Lớp học</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Quản lý lớp học</h1>
+          <p className="text-muted-foreground mt-2">
+            Tổng số lớp: {classes.length} | Sức chứa tối đa: {totalCapacity} sinh viên
+          </p>
+        </div>
 
-        <Dialog open={open} onOpenChange={handleClose}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm lớp mới
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingId ? "Chỉnh sửa lớp học" : "Thêm lớp học mới"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <Label>Tên lớp</Label>
-                <Input {...register("name", { required: true })} placeholder="CNTT2023.1" />
-              </div>
-              <div>
-                <Label>Năm học</Label>
-                <Input {...register("year", { required: true })} placeholder="2023-2024" />
-              </div>
-              <div>
-                <Label>Sĩ số tối đa</Label>
-                <Input type="number" {...register("maxStudents", { required: true })} placeholder="60" />
-              </div>
-              <div className="flex justify-end gap-3">
-                <Button type="button" variant="outline" onClick={handleClose}>
-                  <X className="mr-2 h-4 w-4" /> Hủy
-                </Button>
-                <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" />
-                  {editingId ? "Cập nhật" : "Thêm lớp"}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={handleAddClick}>
+          <Plus className="mr-2 h-4 w-4" />
+          Thêm lớp mới
+        </Button>
       </div>
 
+      {/* LOADING STATE */}
       {loading ? (
-        <div className="flex justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="flex justify-center py-20">
+          <div className="text-center">
+            <Loader2 className="h-10 w-10 animate-spin mx-auto text-blue-600" />
+            <p className="mt-4 text-muted-foreground">Đang tải danh sách lớp...</p>
+          </div>
         </div>
       ) : classes.length === 0 ? (
-        <div className="text-center py-10 text-muted-foreground">
-          Chưa có lớp học nào. Hãy thêm lớp đầu tiên!
+        /* EMPTY STATE */
+        <div className="text-center py-20 border-2 border-dashed rounded-lg">
+          <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium mb-2">Chưa có lớp học nào</h3>
+          <p className="text-muted-foreground mb-6">
+            Bắt đầu bằng cách thêm lớp học đầu tiên của bạn
+          </p>
+          <Button onClick={handleAddClick} size="lg">
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm lớp đầu tiên
+          </Button>
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>STT</TableHead>
-              <TableHead>Tên lớp</TableHead>
-              <TableHead>Năm học</TableHead>
-              <TableHead>Sĩ số tối đa</TableHead>
-              <TableHead className="text-right">Hành động</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {classes.map((cls, index) => (
-              <TableRow key={cls.id}>
-                <TableCell>{index + 1}</TableCell>
-                <TableCell className="font-medium">{cls.name}</TableCell>
-                <TableCell>{cls.year}</TableCell>
-                <TableCell>{cls.maxStudents}</TableCell>
-                <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => handleEdit(cls)}>
-                    <Edit className="h-4 w-4 text-blue-600" />
-                  </Button>
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(cls.id)}>
-                    <Trash2 className="h-4 w-4 text-red-600" />
-                  </Button>
-                </TableCell>
+        /* CLASSES TABLE */
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader className="bg-slate-50">
+              <TableRow>
+                <TableHead className="font-semibold">STT</TableHead>
+                <TableHead className="font-semibold">Tên lớp</TableHead>
+                <TableHead className="font-semibold">Năm học</TableHead>
+                <TableHead className="font-semibold">Sĩ số tối đa</TableHead>
+                <TableHead className="font-semibold text-right">Hành động</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {classes.map((cls, index) => (
+                <TableRow key={cls.id} className="hover:bg-slate-50">
+                  <TableCell className="font-medium">{index + 1}</TableCell>
+                  <TableCell className="font-medium">
+                    <div>
+                      <div className="font-semibold text-blue-600">{cls.name}</div>
+
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium">
+                      {cls.year}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <div className="w-32 bg-slate-200 rounded-full h-2 mr-3">
+                        <div
+                          className="bg-green-500 h-2 rounded-full"
+                          style={{ width: `${Math.min(100, (cls.maxStudents / 100) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <span className="font-semibold">{cls.maxStudents}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(cls)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(cls.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Xóa
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
+      <AddClassDialog
+        open={openDialog}
+        onOpenChange={setOpenDialog}
+        editingClass={editingClass}
+        onSuccess={handleClassSubmit}
+      />
+
     </div>
+
   );
 }

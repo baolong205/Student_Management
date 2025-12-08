@@ -26,7 +26,7 @@ export const useStudentStore = create((set) => ({
         students: [...state.students, newStudent],
         loading: false,
       }));
-      toast.success("Thêm sinh viên thành công!");
+   
       return newStudent;
     } catch (err) {
       set({ loading: false });
@@ -43,7 +43,6 @@ export const useStudentStore = create((set) => ({
         students: state.students.map((s) => (s.id === id ? updated : s)),
         loading: false,
       }));
-      toast.success("Cập nhật thành công!");
     } catch (err) {
       set({ loading: false });
       toast.error("Cập nhật thất bại!");
