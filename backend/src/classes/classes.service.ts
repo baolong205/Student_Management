@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Class } from '../classes/entity/classes.entity';
+import { Class } from './entity/classes.entity';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
 
@@ -14,68 +14,68 @@ import { UpdateClassDto } from './dto/update-class.dto';
 export class ClassesService {
   constructor(
     @InjectRepository(Class)
-    private classesRepository: Repository<Class>,
+    private classRepo: Repository<Class>,
   ) {}
 
-  async create(createClassDto: CreateClassDto): Promise<Class> {
-    const exists = await this.classesRepository.findOne({
-      where: { name: createClassDto.name },
-    });
-    if (exists) {
-      throw new ConflictException('Tên lớp đã tồn tại');
-    }
+  // Tạo lớp mới
+  async create(dto: CreateClassDto) {
+    const exists = await this.classRepo.findOneBy({ name: dto.name });
+    if (exists) throw new ConflictException('Tên lớp đã tồn tại');
 
-    const cls = this.classesRepository.create(createClassDto);
-    return this.classesRepository.save(cls);
+    const cls = this.classRepo.create(dto);
+    return this.classRepo.save(cls);
   }
 
-  findAll(): Promise<Class[]> {
-    return this.classesRepository.find({
-      relations: ['students'],
-      order: { year: 'DESC', name: 'ASC' },
-    });
+  // Lấy tất cả lớp + số sinh viên hiện tại (realtime)
+  findAll() {
+    return this.classRepo
+      .createQueryBuilder('class')
+      .loadRelationCountAndMap('class.currentStudents', 'class.students')
+      .orderBy('class.enrollmentYear', 'DESC')
+      .addOrderBy('class.name', 'ASC')
+      .getMany();
   }
 
-  async findOne(id: string): Promise<Class> {
-    const cls = await this.classesRepository.findOne({
-      where: { id },
-      relations: ['students'],
-    });
-    if (!cls) {
-      throw new NotFoundException(`Lớp với ID ${id} không tồn tại`);
-    }
+  // Lấy 1 lớp chi tiết + số sinh viên
+  async findOne(id: string) {
+    const cls = await this.classRepo
+      .createQueryBuilder('class')
+      .where('class.id = :id', { id })
+      .loadRelationCountAndMap('class.currentStudents', 'class.students')
+      .leftJoinAndSelect('class.students', 'student') 
+      .getOne();
+
+    if (!cls) throw new NotFoundException('Lớp không tồn tại');
     return cls;
   }
 
-  async update(id: string, updateClassDto: UpdateClassDto): Promise<Class> {
-  
-    if (updateClassDto.name) {
-      const exists = await this.classesRepository.findOne({
-        where: { name: updateClassDto.name },
-      });
+  // Cập nhật lớp
+  async update(id: string, dto: UpdateClassDto) {
+    if (dto.name) {
+      const exists = await this.classRepo.findOneBy({ name: dto.name });
       if (exists && exists.id !== id) {
         throw new ConflictException('Tên lớp đã tồn tại');
       }
     }
 
-    await this.classesRepository.update(id, updateClassDto);
+    await this.classRepo.update(id, dto);
     return this.findOne(id);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.classesRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Lớp với ID ${id} không tồn tại`);
+  // Xóa lớp
+  async remove(id: string) {
+    const result = await this.classRepo.delete(id);
+    if (!result.affected) {
+      throw new NotFoundException('Lớp không tồn tại');
     }
   }
 
-
-  async findEmptyClasses(): Promise<Class[]> {
-    return this.classesRepository
+  // Tìm các lớp chưa có sinh viên
+  findEmptyClasses() {
+    return this.classRepo
       .createQueryBuilder('class')
-      .leftJoin('class.students', 'student')
-      .having('COUNT(student.id) = 0')
-      .groupBy('class.id')
+      .loadRelationCountAndMap('class.currentStudents', 'class.students')
+      .having('class.currentStudents = 0')
       .getMany();
   }
 }

@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Class } from '../../classes/entity/classes.entity';
 import { Enrollment } from '../../enrollments/entity/enrollment.entity';

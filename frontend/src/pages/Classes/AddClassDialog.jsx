@@ -26,12 +26,13 @@ export default function AddClassDialog({
     formState: { errors },
   } = useForm();
 
-  // Fill dữ liệu khi sửa
   useEffect(() => {
     if (open) {
       if (editingClass) {
         setValue("name", editingClass.name);
-        setValue("year", editingClass.year);
+        setValue("major", editingClass.major);
+        setValue("enrollmentYear", editingClass.enrollmentYear);
+        setValue("currentYear", editingClass.currentYear);
         setValue("maxStudents", editingClass.maxStudents);
       } else {
         reset();
@@ -41,82 +42,98 @@ export default function AddClassDialog({
 
   const onSubmit = async (data) => {
     try {
-      await onSuccess({
+      const payload = {
         id: editingClass?.id,
-        ...data,
+        name: data.name.trim(),
+        major: data.major.trim(),
+        enrollmentYear: Number(data.enrollmentYear),
+        currentYear: Number(data.currentYear || 1),
         maxStudents: Number(data.maxStudents),
-      });
+      };
+
+      await onSuccess(payload);
       onOpenChange(false);
       reset();
     } catch (error) {
       console.error(error);
-      throw error; // Re-throw để parent component xử lý
+      throw error;
     }
   };
 
-  const handleClose = () => {
-    onOpenChange(false);
-    reset();
-  };
-
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{editingClass ? "Chỉnh sửa lớp học" : "Thêm lớp học mới"}</DialogTitle>
+          <DialogTitle className="text-xl">
+            {editingClass ? "Chỉnh sửa lớp học" : "Thêm lớp học mới"}
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Name */}
-          <div className="space-y-2">
-            <Label htmlFor="name">Tên lớp <span className="text-red-500">*</span></Label>
-            <Input
-              {...register("name", { required: "Tên lớp không được để trống" })}
-              placeholder="VD: CNTT2023.1"
-              className={errors.name && "border-red-500"}
-            />
-            {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          <div className="grid grid-cols-2 gap-2 gap-4">
+            <div>
+              <Label>Tên lớp <span className="text-red-500">*</span></Label>
+              <Input
+                {...register("name", { required: "Bắt buộc nhập tên lớp" })}
+                placeholder="VD: DHCNTT20A"
+              />
+              {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
+            </div>
+
+            <div>
+              <Label>Ngành học <span className="text-red-500">*</span></Label>
+              <Input
+                {...register("major", { required: "Bắt buộc chọn ngành" })}
+                placeholder="VD: Công nghệ thông tin"
+              />
+              {errors.major && <p className="text-sm text-red-500 mt-1">{errors.major.message}</p>}
+            </div>
+
+            <div>
+              <Label>Năm nhập học <span className="text-red-500">*</span></Label>
+              <Input
+                type="number"
+                {...register("enrollmentYear", {
+                  required: "Bắt buộc",
+                  min: { value: 2000, message: "Năm ≥ 2000" },
+                  max: { value: new Date().getFullYear() + 5, message: "Năm không hợp lệ" },
+                })}
+                placeholder="2024"
+              />
+              {errors.enrollmentYear && <p className="text-sm text-red-500 mt-1">{errors.enrollmentYear.message}</p>}
+            </div>
+
+            <div>
+              <Label>Năm học hiện tại</Label>
+              <Input
+                type="number"
+                min="1"
+                max="6"
+                defaultValue={1}
+                {...register("currentYear")}
+                placeholder="1"
+              />
+            </div>
+
+            <div>
+              <Label>Sĩ số tối đa <span className="text-red-500">*</span></Label>
+              <Input
+                type="number"
+                {...register("maxStudents", {
+                  required: "Bắt buộc",
+                  min: { value: 20, message: "Tối thiểu 20" },
+                  max: { value: 200, message: "Tối đa 200" },
+                })}
+                placeholder="60"
+              />
+              {errors.maxStudents && <p className="text-sm text-red-500 mt-1">{errors.maxStudents.message}</p>}
+            </div>
           </div>
 
-          {/* Year */}
-          <div className="space-y-2">
-            <Label htmlFor="year">Năm học <span className="text-red-500">*</span></Label>
-            <Input
-              {...register("year", {
-                required: "Năm học không được để trống",
-                pattern: {
-                  value: /^\d{4}-\d{4}$/,
-                  message: "Định dạng năm học: YYYY-YYYY (VD: 2023-2024)",
-                },
-              })}
-              placeholder="2023-2024"
-              className={errors.year && "border-red-500"}
-            />
-            {errors.year && <p className="text-sm text-red-500">{errors.year.message}</p>}
-          </div>
-
-          {/* Max students */}
-          <div className="space-y-2">
-            <Label htmlFor="maxStudents">Sĩ số tối đa <span className="text-red-500">*</span></Label>
-            <Input
-              type="number"
-              {...register("maxStudents", {
-                required: "Sĩ số không được để trống",
-                min: { value: 1, message: "Sĩ số phải lớn hơn 0" },
-                max: { value: 200, message: "Không vượt quá 200" },
-              })}
-              placeholder="60"
-              className={errors.maxStudents && "border-red-500"}
-            />
-            {errors.maxStudents && <p className="text-sm text-red-500">{errors.maxStudents.message}</p>}
-          </div>
-
-          {/* Buttons */}
           <div className="flex justify-end gap-3 pt-4">
-            <Button type="button" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               <X className="mr-2 h-4 w-4" /> Hủy
             </Button>
-
             <Button type="submit">
               <Save className="mr-2 h-4 w-4" />
               {editingClass ? "Cập nhật" : "Thêm lớp"}
