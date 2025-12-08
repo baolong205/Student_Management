@@ -1,4 +1,4 @@
-// src/enrollments/enrollment.entity.ts
+
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,44 +6,69 @@ import {
   CreateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  ManyToOne,
+  Index,
 } from 'typeorm';
+import { Student } from '../student/entity/student.entity';
+// import { Subject } from '../../subjects/entities/subject.entity';
 
-@Entity('enrollment')
+@Entity('enrollments')
+@Index(['student'], { unique: true })
 export class Enrollment {
-  // - id: string (Primary Key)
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // - midtermScore: num (Kiểu float hoặc decimal cho điểm số)
-  @Column({ type: 'float', nullable: true, default: 0 })
+  @ManyToOne(() => Student, (student) => student.enrollments, { onDelete: 'CASCADE' })
+  student: Student;
+
+  // @ManyToOne(() => Subject, (subject) => subject.enrollments, { onDelete: 'RESTRICT' })
+  // subject: Subject;
+
+  // Học kỳ (ví dụ: 20241, 20242)
+  @Column({ type: 'varchar', length: 10 })
+  semester: string;
+  @Column({ type: 'decimal', precision: 4, scale: 2, default: 0.0 })
+  attendanceScore: number;
+  @Column({ type: 'decimal', precision: 4, scale: 2, default: 0.0 })
+  regularScore: number;
+  // Điểm giữa kỳ (0.0 -> 10.0)
+  @Column({ type: 'decimal', precision: 4, scale: 2, default: 0.0 })
   midtermScore: number;
 
-  // - finalScore: num
-  @Column({ type: 'float', nullable: true, default: 0 })
+  // Điểm cuối kỳ
+  @Column({ type: 'decimal', precision: 4, scale: 2, default: 0.0 })
   finalScore: number;
 
-  // - totalScore: num
-  // Sử dụng Generated Column (hoặc đơn giản là float) để lưu trữ kết quả
-  @Column({ type: 'float', default: 0 })
+  // Tổng kết 
+  @Column({ type: 'decimal', precision: 4, scale: 2, default: 0.0 })
   totalScore: number;
 
-  // - enrolledAt: Date (Sử dụng CreateDateColumn hoặc Column với kiểu timestamp)
-  @CreateDateColumn({ type: 'timestamp' })
+  // Điểm chữ (A, B+, C, F...)
+  @Column({ type: 'varchar', length: 3, nullable: true })
+  letterGrade?: string;
+
+  @CreateDateColumn()
   enrolledAt: Date;
 
-  // ------------------------------------------------------------------
-  // + calcTotalScore() - Hàm logic
-  
-  // Hook chạy trước khi lưu (Insert) hoặc cập nhật (Update)
   @BeforeInsert()
   @BeforeUpdate()
-  calcTotalScore() {
-    // Giả sử tổng điểm được tính bằng 40% điểm giữa kỳ và 60% điểm cuối kỳ
-    this.totalScore = (this.midtermScore * 0.4) + (this.finalScore * 0.6);
-  }
+  calculateScores() {
+    const attendanceScore = Number(this.attendanceScore || 0);
+    const regularScore = Number(this.regularScore || 0);
+    const midterm = Number(this.midtermScore || 0);
+    const final = Number(this.finalScore || 0);
 
-  // Hàm tính toán có thể gọi lại bên ngoài nếu cần (không bắt buộc)
-  public getTotalScore(): number {
-    return this.totalScore;
+    // 10% chuyên cần 25% điểm thường xuyên 15% giữa kỳ + 50% cuối kỳ
+    const total = attendanceScore * 0.1 + regularScore * 0.25 + midterm * 0.15 + final * 0.5;
+    this.totalScore = Number(total.toFixed(2));
+
+    // Tự động tính điểm chữ (tuỳ trường)
+    if (this.totalScore >= 8.5) this.letterGrade = 'A';
+    else if (this.totalScore >= 8.0) this.letterGrade = 'B+';
+    else if (this.totalScore >= 7.0) this.letterGrade = 'B';
+    else if (this.totalScore >= 6.5) this.letterGrade = 'C+';
+    else if (this.totalScore >= 5.5) this.letterGrade = 'C';
+    else if (this.totalScore >= 4.0) this.letterGrade = 'D';
+    else this.letterGrade = 'F';
   }
 }
