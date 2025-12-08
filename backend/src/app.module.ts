@@ -10,7 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { StudentsModule } from './student/student.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
-
+import { TeacherModule } from './teacher/teacher.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -30,6 +30,7 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
     StudentsModule,
     SubjectsModule,
     EnrollmentsModule,
+    TeacherModule,
   ],
 })
 export class AppModule {}
