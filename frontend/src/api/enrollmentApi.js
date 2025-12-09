@@ -30,5 +30,14 @@ export const enrollmentsApi = {
   delete: async (id) => {
     const response = await api.delete(`/enrollments/${id}`)
     return response.data
+  },
+   getByStudentId: async (studentId) => {
+    const response = await api.get(`/enrollments/student/${studentId}`)
+    return response.data
+  },
+
+  getBySubjectId: async (subjectId) => {
+    const response = await api.get(`/enrollments/subject/${subjectId}`)
+    return response.data
   }
 }

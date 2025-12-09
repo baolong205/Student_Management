@@ -1,6 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+// src/teacher/teacher.service.ts
+
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In, Like } from 'typeorm';
 import { Teacher } from './entity/teacher.entity';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
@@ -11,145 +13,139 @@ import { Subject } from '../subjects/entity/subject.entity';
 export class TeacherService {
   constructor(
     @InjectRepository(Teacher)
-    private teacherRepository: Repository<Teacher>,
+    private teacherRepo: Repository<Teacher>,
     @InjectRepository(Class)
-    private classRepository: Repository<Class>,
+    private classRepo: Repository<Class>,
     @InjectRepository(Subject)
-    private subjectRepository: Repository<Subject>,
-  ) {}
+    private subjectRepo: Repository<Subject>,
+  ) { }
 
-  async create(createTeacherDto: CreateTeacherDto): Promise<Teacher> {
-    const teacher = this.teacherRepository.create(createTeacherDto);
+  // CREATE
+  async create(dto: CreateTeacherDto) {
+    const teacher = this.teacherRepo.create({
+      ...dto,
+      subjects: [],
+      classes: [],
+    });
 
-    // Xử lý classId - chỉ khi có giá trị
-    if (createTeacherDto.classId && createTeacherDto.classId.trim() !== '') {
-      const classEntity = await this.classRepository.findOne({
-        where: { id: createTeacherDto.classId },
-      });
-      if (!classEntity) {
-        throw new NotFoundException(`Không tìm thấy lớp học với ID: ${createTeacherDto.classId}`);
+    // Gán môn học nếu có
+    if (dto.subjectIds && dto.subjectIds.length > 0) {
+      const subjects = await this.subjectRepo.findBy({ id: In(dto.subjectIds) });
+      if (subjects.length !== dto.subjectIds.length) {
+        throw new BadRequestException('Một hoặc nhiều môn học không tồn tại');
       }
-      teacher.class = classEntity;
-      teacher.classId = classEntity.id;
+      teacher.subjects = subjects;
     }
 
-    // Xử lý subjectId - chỉ khi có giá trị
-    if (createTeacherDto.subjectId && createTeacherDto.subjectId.trim() !== '') {
-      const subject = await this.subjectRepository.findOne({
-        where: { id: createTeacherDto.subjectId },
-      });
-      if (!subject) {
-        throw new NotFoundException(`Không tìm thấy môn học với ID: ${createTeacherDto.subjectId}`);
+    // Gán lớp học nếu có
+    if (dto.classIds && dto.classIds.length > 0) {
+      const classes = await this.classRepo.findBy({ id: In(dto.classIds) });
+      if (classes.length !== dto.classIds.length) {
+        throw new BadRequestException('Một hoặc nhiều lớp không tồn tại');
       }
-      teacher.subject = subject;
-      teacher.subjectId = subject.id;
+      teacher.classes = classes;
     }
 
-    return await this.teacherRepository.save(teacher);
+    return this.teacherRepo.save(teacher);
   }
 
-  async findAll(): Promise<Teacher[]> {
-    return await this.teacherRepository.find({
-      relations: ['class', 'subject'],
-      order: { createdAt: 'DESC' },
+  // FIND ALL
+  async findAll() {
+    return this.teacherRepo.find({
+      relations: ['subjects', 'classes'],
+      order: { lastName: 'ASC', firstName: 'ASC' },
     });
   }
 
-  async findOne(id: string): Promise<Teacher> {
-    const teacher = await this.teacherRepository.findOne({
+  // FIND ONE
+  async findOne(id: string) {
+    const teacher = await this.teacherRepo.findOne({
       where: { id },
-      relations: ['class', 'subject'],
+      relations: ['subjects', 'classes'],
     });
-    
-    if (!teacher) {
-      throw new NotFoundException(`Không tìm thấy giáo viên với ID: ${id}`);
-    }
-    
+    if (!teacher) throw new NotFoundException('Giáo viên không tồn tại');
     return teacher;
   }
 
-  async update(id: string, updateTeacherDto: UpdateTeacherDto): Promise<Teacher> {
-    const teacher = await this.teacherRepository.findOne({ where: { id } });
-    
-    if (!teacher) {
-      throw new NotFoundException(`Không tìm thấy giáo viên với ID: ${id}`);
-    }
+  // UPDATE
+  async update(id: string, dto: UpdateTeacherDto) {
+    const teacher = await this.findOne(id);
 
-    // XỬ LÝ CLASS - SỬ DỤNG delete THAY VÌ null
-    if (updateTeacherDto.classId !== undefined) {
-      if (updateTeacherDto.classId && updateTeacherDto.classId.trim() !== '') {
-        const classEntity = await this.classRepository.findOne({
-          where: { id: updateTeacherDto.classId },
-        });
-        if (!classEntity) {
-          throw new NotFoundException(`Không tìm thấy lớp học với ID: ${updateTeacherDto.classId}`);
-        }
-        teacher.class = classEntity;
-        teacher.classId = classEntity.id;
+    // Cập nhật thông tin cơ bản
+    Object.assign(teacher, dto);
+
+    // Cập nhật môn học (nếu có trong DTO)
+    if (dto.subjectIds !== undefined) {
+      if (dto.subjectIds.length === 0) {
+        teacher.subjects = [];
       } else {
-        // XÓA QUAN HỆ BẰNG CÁCH ĐẶT undefined
-        delete teacher.class;
-        delete teacher.classId;
+        const subjects = await this.subjectRepo.findBy({ id: In(dto.subjectIds) });
+        if (subjects.length !== dto.subjectIds.length) {
+          throw new BadRequestException('Một hoặc nhiều môn học không tồn tại');
+        }
+        teacher.subjects = subjects;
       }
     }
 
-    // XỬ LÝ SUBJECT - SỬ DỤNG delete THAY VÌ null
-    if (updateTeacherDto.subjectId !== undefined) {
-      if (updateTeacherDto.subjectId && updateTeacherDto.subjectId.trim() !== '') {
-        const subject = await this.subjectRepository.findOne({
-          where: { id: updateTeacherDto.subjectId },
-        });
-        if (!subject) {
-          throw new NotFoundException(`Không tìm thấy môn học với ID: ${updateTeacherDto.subjectId}`);
-        }
-        teacher.subject = subject;
-        teacher.subjectId = subject.id;
+    // Cập nhật lớp học (nếu có trong DTO)
+    if (dto.classIds !== undefined) {
+      if (dto.classIds.length === 0) {
+        teacher.classes = [];
       } else {
-        // XÓA QUAN HỆ BẰNG CÁCH ĐẶT undefined
-        delete teacher.subject;
-        delete teacher.subjectId;
+        const classes = await this.classRepo.findBy({ id: In(dto.classIds) });
+        if (classes.length !== dto.classIds.length) {
+          throw new BadRequestException('Một hoặc nhiều lớp không tồn tại');
+        }
+        teacher.classes = classes;
       }
     }
 
-    // CẬP NHẬT CÁC TRƯỜNG KHÁC
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { classId, subjectId, ...rest } = updateTeacherDto;
-    Object.assign(teacher, rest);
-    
-    // Lưu thay đổi
-    return await this.teacherRepository.save(teacher);
+    return this.teacherRepo.save(teacher);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.teacherRepository.delete(id);
-    
-    if (result.affected === 0) {
-      throw new NotFoundException(`Không tìm thấy giáo viên với ID: ${id}`);
+  // REMOVE
+  async remove(id: string) {
+    const teacher = await this.findOne(id);
+    await this.teacherRepo.remove(teacher);
+    return { message: 'Xóa giáo viên thành công' };
+  }
+
+  // Tìm giáo viên theo môn học
+  async findBySubject(subjectId: string) {
+    return this.teacherRepo.find({
+      where: { subjects: { id: subjectId } },
+      relations: ['subjects', 'classes'],
+    });
+  }
+
+  // Tìm giáo viên theo lớp
+  async findByClass(classId: string) {
+    return this.teacherRepo.find({
+      where: { classes: { id: classId } },
+      relations: ['subjects', 'classes'],
+    });
+  }
+  // Tìm kiếm giáo viên theo tên, email, môn học hoặc lớp
+  async search(keyword: string) {
+    if (!keyword || keyword.trim() === '') {
+      return this.findAll();
     }
-  }
 
-  async findByClass(classId: string): Promise<Teacher[]> {
-    return await this.teacherRepository.find({
-      where: { classId },
-      relations: ['class', 'subject'],
+    const searchTerm = keyword.trim().toLowerCase();
+
+    return this.teacherRepo.find({
+      where: [
+        // Tìm theo tên (firstName hoặc lastName)
+        { firstName: Like(`%${searchTerm}%`) },
+        { lastName: Like(`%${searchTerm}%`) },
+        { email: Like(`%${searchTerm}%`) },
+        // Tìm theo tên môn học
+        { subjects: { name: Like(`%${searchTerm}%`) } },
+        // Tìm theo tên lớp
+        { classes: { name: Like(`%${searchTerm}%`) } },
+      ],
+      relations: ['subjects', 'classes'],
+      order: { lastName: 'ASC', firstName: 'ASC' },
     });
-  }
-
-  async findBySubject(subjectId: string): Promise<Teacher[]> {
-    return await this.teacherRepository.find({
-      where: { subjectId },
-      relations: ['class', 'subject'],
-    });
-  }
-
-  async search(keyword: string): Promise<Teacher[]> {
-    return await this.teacherRepository
-      .createQueryBuilder('teacher')
-      .leftJoinAndSelect('teacher.class', 'class')
-      .leftJoinAndSelect('teacher.subject', 'subject')
-      .where('teacher.firstName LIKE :keyword', { keyword: `%${keyword}%` })
-      .orWhere('teacher.lastName LIKE :keyword', { keyword: `%${keyword}%` })
-      .orWhere('teacher.email LIKE :keyword', { keyword: `%${keyword}%` })
-      .getMany();
   }
 }

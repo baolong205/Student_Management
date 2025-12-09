@@ -5,12 +5,18 @@ import { Repository } from 'typeorm';
 import { Subject } from './entity/subject.entity';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { Enrollment } from 'src/enrollments/entity/enrollment.entity';
+import { Student } from 'src/student/entity/student.entity';
 
 @Injectable()
 export class SubjectsService {
   constructor(
     @InjectRepository(Subject)
     private readonly subjectsRepository: Repository<Subject>,
+
+    @InjectRepository(Enrollment)
+    private readonly enrollmentRepository: Repository<Enrollment>,
+    
   ) { }
 
   // 1. Tạo môn học mới
@@ -78,4 +84,69 @@ export class SubjectsService {
     await this.subjectsRepository.remove(subject);
     return { message: 'Đã xóa môn học thành công' };
   }
+  async getSubjectEnrollments(id: string): Promise<Enrollment[]> {
+    const subject = await this.findOne(id);
+
+    return await this.enrollmentRepository.find({
+      where: { subjectId: id },
+      relations: ['student'],
+      order: { enrolledAt: 'DESC' }
+    });
+  }
+
+  // 8. Lấy danh sách sinh viên đang học môn học
+  async getSubjectStudents(id: string): Promise<any[]> {
+    const enrollments = await this.getSubjectEnrollments(id);
+
+    return enrollments.map(enrollment => ({
+      ...enrollment.student,
+      enrollmentId: enrollment.id,
+      scores: {
+        attendanceScore: enrollment.attendanceScore,
+        regularScore: enrollment.regularScore,
+        midtermScore: enrollment.midtermScore,
+        finalScore: enrollment.finalScore,
+        totalScore: enrollment.totalScore
+      },
+      enrolledAt: enrollment.enrolledAt
+    }));
+  }
+
+  // 9. Lấy thống kê môn học
+  async getSubjectStats(id: string): Promise<any> {
+    const enrollments = await this.getSubjectEnrollments(id);
+
+    if (enrollments.length === 0) {
+      return {
+        totalStudents: 0,
+        averageScore: 0,
+        scoreDistribution: {},
+        attendanceRate: 0
+      };
+    }
+
+    const totalScore = enrollments.reduce((sum, e) => sum + e.totalScore, 0);
+    const averageScore = totalScore / enrollments.length;
+
+    // Phân phối điểm
+    const scoreDistribution = {
+      A: enrollments.filter(e => e.totalScore >= 8.5).length,
+      B: enrollments.filter(e => e.totalScore >= 7 && e.totalScore < 8.5).length,
+      C: enrollments.filter(e => e.totalScore >= 5.5 && e.totalScore < 7).length,
+      D: enrollments.filter(e => e.totalScore >= 4 && e.totalScore < 5.5).length,
+      F: enrollments.filter(e => e.totalScore < 4).length
+    };
+
+    // Tỷ lệ chuyên cần (giả sử attendanceScore >= 8 là chuyên cần tốt)
+    const goodAttendance = enrollments.filter(e => e.attendanceScore >= 8).length;
+    const attendanceRate = (goodAttendance / enrollments.length) * 100;
+
+    return {
+      totalStudents: enrollments.length,
+      averageScore: parseFloat(averageScore.toFixed(2)),
+      scoreDistribution,
+      attendanceRate: parseFloat(attendanceRate.toFixed(2))
+    };
+  }
+
 }

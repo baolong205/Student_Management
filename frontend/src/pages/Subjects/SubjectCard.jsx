@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, MoreVertical, Pencil, Trash2, Eye, Users } from "lucide-react";
-
+import { Link } from "react-router-dom";
 const SubjectCard = ({ subject, onEdit, onDelete, onView }) => {
   // Xác định màu badge dựa trên số tín chỉ
   const getCreditVariant = (credits) => {
@@ -37,7 +37,7 @@ const SubjectCard = ({ subject, onEdit, onDelete, onView }) => {
               )}
             </div>
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -65,7 +65,7 @@ const SubjectCard = ({ subject, onEdit, onDelete, onView }) => {
           </DropdownMenu>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="space-y-4">
           {/* Tín chỉ */}
@@ -87,22 +87,20 @@ const SubjectCard = ({ subject, onEdit, onDelete, onView }) => {
               <Pencil className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <Separator />
-          
+
           {/* Thông tin thêm */}
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center space-x-2 text-muted-foreground">
               <Users className="h-4 w-4" />
               <span>Số SV: {subject.enrollmentCount || 0}</span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onView && onView(subject)}
-            >
-              Chi tiết
-            </Button>
+            <Link to={`/subjects/${subject.id}`}>
+              <Button variant="outline" size="sm">
+                Chi tiết
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>

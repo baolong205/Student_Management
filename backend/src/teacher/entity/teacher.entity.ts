@@ -1,11 +1,7 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-} from 'typeorm';
-import { Class } from '../../classes/entity/classes.entity'; // ĐƯỜNG DẪN ĐÚNG
+// src/teacher/entity/teacher.entity.ts
+
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Class } from '../../classes/entity/classes.entity';
 import { Subject } from '../../subjects/entity/subject.entity';
 
 @Entity('teachers')
@@ -46,41 +42,31 @@ export class Teacher {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
+  @Column({
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
   updatedAt: Date;
 
-  // ========== KHÓA NGOẠI ==========
-  @Column({ type: 'uuid', nullable: true })
-  classId?: string;
+  // ========== QUAN HỆ CHUẨN ==========
 
-  @Column({ type: 'uuid', nullable: true })
-  subjectId?: string;
+  // Một giáo viên có thể dạy nhiều môn
+  @ManyToMany(() => Subject, (subject) => subject.teachers)
+  subjects: Subject[];
 
-  // ========== QUAN HỆ VỚI LỚP HỌC ==========
-  @ManyToOne(() => Class, (classEntity) => classEntity.teachers, { 
-    nullable: true,
-    onDelete: 'SET NULL'
-  })
-  @JoinColumn({ name: 'classId' })
-  class?: Class;
+  // Một giáo viên có thể dạy nhiều lớp
+  @ManyToMany(() => Class, (cls) => cls.teachers)
+  classes: Class[];
 
-  // ========== QUAN HỆ VỚI MÔN HỌC ==========
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  @ManyToOne(() => Subject, (subject) => subject.teachers, { 
-    nullable: true,
-    onDelete: 'SET NULL'
-  })
-  @JoinColumn({ name: 'subjectId' })
-  subject?: Subject;
-
-  // ========== PHƯƠNG THỨC HELPER ==========
+  // ========== HELPER ==========
   get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
+    return `${this.firstName} ${this.lastName}`.trim();
   }
 
   get details(): string {
-    const classInfo = this.class ? `Lớp: ${this.class.name}` : 'Chưa có lớp';
-    const subjectInfo = this.subject ? `Môn: ${this.subject.name}` : 'Chưa có môn';
-    return `${this.fullName} - ${classInfo} - ${subjectInfo}`;
+    const subjects = this.subjects?.map(s => s.name).join(', ') || 'Chưa có môn';
+    const classes = this.classes?.map(c => c.name).join(', ') || 'Chưa có lớp';
+    return `${this.fullName} | Môn: ${subjects} | Lớp: ${classes}`;
   }
 }
