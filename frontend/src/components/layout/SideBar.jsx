@@ -7,7 +7,7 @@ const navItems = [
   { to: "/students", icon: GraduationCap, label: "Sinh viên" },
   { to: "/classes", icon: School, label: "Lớp học" },
   { to: "/subjects", icon: BookOpen, label: "Môn học" },
-  { to: "/scores", icon: BarChart3, label: "Quản lý điểm" },
+  { to: "/enrollment", icon: BarChart3, label: "Quản lý điểm" },
 ];
 
 export default function Sidebar() {

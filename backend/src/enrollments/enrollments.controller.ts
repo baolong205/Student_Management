@@ -23,7 +23,7 @@ export class EnrollmentsController {
 
   @Patch(':id') // Sửa điểm
   async update(@Param('id') id: string, @Body() updateData: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    
     return await this.enrollmentsService.update(id, updateData);
   }
 

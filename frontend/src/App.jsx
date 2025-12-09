@@ -4,6 +4,7 @@ import LoginPage from "./pages/Auth/LoginPage";
 import ClassesPage from "./pages/Classes/ClassesPage";
 import StudentPage from "./pages/Students/StudentPage";
 import SubjectsPage from "./pages/Subjects/SubjectPage";
+import EnrollmentsPage from "./pages/Enrollments/EnrollmentsPage";
 // import DashboardPage from "./pages/DashboardPage";
 // import StudentList from "./pages/StudentList";
 
@@ -16,11 +17,13 @@ function App() {
           <Route path="classes" element={<ClassesPage />} />
           <Route path="students" element={<StudentPage />} />
           <Route path="/subjects" element={<SubjectsPage />} />
+            <Route path="/enrollment" element={<EnrollmentsPage />} />
           {/* <Route path="students" element={<StudentList />} /> */}
           {/* Các route khác */}
         </Route>
       </Routes>
     </BrowserRouter>
+    
   );
 }
 
