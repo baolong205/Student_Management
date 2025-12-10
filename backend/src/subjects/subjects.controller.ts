@@ -1,4 +1,3 @@
-
 import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
@@ -12,7 +11,6 @@ export class SubjectsController {
   async create(@Body() dto: CreateSubjectDto) {
     return await this.subjectsService.create(dto);
   }
-
   @Get()
   async findAll() {
     return await this.subjectsService.findAll();
@@ -37,9 +35,6 @@ export class SubjectsController {
   async remove(@Param('id') id: string) {
     return await this.subjectsService.remove(id);
   }
-
-  // ========== ENDPOINT MỚI ==========
-  
   @Get(':id/enrollments')
   async getSubjectEnrollments(@Param('id') id: string) {
     return await this.subjectsService.getSubjectEnrollments(id);

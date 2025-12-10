@@ -1,4 +1,3 @@
-
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -57,8 +56,6 @@ export class StudentService {
       throw new NotFoundException(`Sinh viên với ID ${id} không tồn tại`);
     }
   }
-
-  // Tìm kiếm theo tên hoặc email
   async search(query: string): Promise<Student[]> {
     return this.studentsRepository
       .createQueryBuilder('student')

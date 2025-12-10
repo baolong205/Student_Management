@@ -1,4 +1,3 @@
-// src/subjects/dto/create-subject.dto.ts
 import { IsString, IsNumber, IsOptional, Min, Max, Length, Matches } from 'class-validator';
 
 export class CreateSubjectDto {

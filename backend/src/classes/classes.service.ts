@@ -1,4 +1,4 @@
-// src/classes/classes.service.ts
+
 import {
   Injectable,
   NotFoundException,
@@ -26,7 +26,6 @@ export class ClassesService {
     return this.classRepo.save(cls);
   }
 
-  // Lấy tất cả lớp + số sinh viên hiện tại (realtime)
   findAll() {
     return this.classRepo
       .createQueryBuilder('class')

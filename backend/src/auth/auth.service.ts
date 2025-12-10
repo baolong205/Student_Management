@@ -12,16 +12,16 @@ export class AuthService {
 
   // 1. Hàm register phải nằm trong class
   async register(registerDto: any) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    
     const userExist = await this.usersService.findOneByUsername(registerDto.username);
     if (userExist) {
       throw new ConflictException('Username đã tồn tại!');
     }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    
     return this.usersService.createUser(registerDto);
   }
 
-  // 2. Hàm login phải nằm trong class và sửa lỗi Strict Null Check
+
   async login(username: string, pass: string) {
     const user = await this.usersService.findOneByUsername(username);
 
@@ -36,7 +36,7 @@ export class AuthService {
       throw new UnauthorizedException('Mật khẩu không đúng');
     }
 
-    // Tạo JWT Payload
+   
     const payload = {
       username: user.username,
       sub: user.id,

@@ -36,7 +36,6 @@ export class Student {
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-
   @Column({ name: 'class_id', nullable: true })
   classId?: string;
 

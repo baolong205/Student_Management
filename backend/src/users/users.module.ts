@@ -1,4 +1,4 @@
-// src/users/users.module.ts
+
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersService } from './users.service';
@@ -9,6 +9,6 @@ import { User } from './entity/user.entity';
   imports: [TypeOrmModule.forFeature([User])],
   providers: [UsersService],
   controllers: [UsersController],
-  exports: [UsersService], // quan trọng: để AuthModule dùng được sau này
+  exports: [UsersService], 
 })
 export class UsersModule { }
