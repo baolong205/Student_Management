@@ -1,6 +1,6 @@
 // src/teacher/entity/teacher.entity.ts
 
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Class } from '../../classes/entity/classes.entity';
 import { Subject } from '../../subjects/entity/subject.entity';
 
@@ -39,17 +39,12 @@ export class Teacher {
   @Column({ type: 'varchar', length: 100, nullable: true })
   qualification?: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn()
   createdAt: Date;
 
-  @Column({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
+  @UpdateDateColumn()
   updatedAt: Date;
 
-  // ========== QUAN HỆ CHUẨN ==========
 
   // Một giáo viên có thể dạy nhiều môn
   @ManyToMany(() => Subject, (subject) => subject.teachers)
@@ -59,7 +54,6 @@ export class Teacher {
   @ManyToMany(() => Class, (cls) => cls.teachers)
   classes: Class[];
 
-  // ========== HELPER ==========
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`.trim();
   }

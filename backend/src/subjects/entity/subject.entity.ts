@@ -11,7 +11,7 @@ export class Subject {
 
   @Column({ unique: true })
   name: string;
-
+  //unique: giá trị trong cột không đc trùng nhau,nullable: cho phép cột đó có giá trị null
   @Column({ type: 'varchar', length: 20, unique: true, nullable: true })
   subjectCode: string;
 
@@ -29,8 +29,6 @@ export class Subject {
 
   @Column({ type: 'int', nullable: true })
   hoursPerWeek: number;
-
-  // ========== QUAN HỆ ĐÚNG ==========
 
   @OneToMany(() => Enrollment, (enrollment) => enrollment.subject)
   enrollments: Enrollment[];

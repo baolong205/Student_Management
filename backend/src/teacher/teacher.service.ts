@@ -49,7 +49,7 @@ export class TeacherService {
     return this.teacherRepo.save(teacher);
   }
 
-  // FIND ALL
+ 
   async findAll() {
     return this.teacherRepo.find({
       relations: ['subjects', 'classes'],
@@ -103,7 +103,7 @@ export class TeacherService {
     return this.teacherRepo.save(teacher);
   }
 
-  // REMOVE
+  // Hàm xóa giáo viên
   async remove(id: string) {
     const teacher = await this.findOne(id);
     await this.teacherRepo.remove(teacher);

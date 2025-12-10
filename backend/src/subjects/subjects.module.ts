@@ -1,4 +1,3 @@
-// src/subjects/subjects.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { SubjectsService } from './subjects.service'

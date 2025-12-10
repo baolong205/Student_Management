@@ -45,7 +45,6 @@ export class ClassesController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string): Promise<void> {
     return this.classesService.remove(id);
   }

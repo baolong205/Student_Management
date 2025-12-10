@@ -8,10 +8,10 @@ import { Subject } from '../subjects/entity/subject.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Teacher, Class, Subject]), // Đăng ký các entity
+    TypeOrmModule.forFeature([Teacher, Class, Subject]),
   ],
   controllers: [TeacherController],
   providers: [TeacherService],
-  exports: [TeacherService], // Export service để sử dụng ở module khác
+  exports: [TeacherService],
 })
 export class TeacherModule {}

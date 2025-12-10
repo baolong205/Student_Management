@@ -1,4 +1,3 @@
-
 import {
   Controller,
   Get,
@@ -8,8 +7,6 @@ import {
   Delete,
   Put,
   Query,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -49,7 +46,6 @@ export class StudentController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string): Promise<void> {
     return this.studentsService.remove(id);
   }

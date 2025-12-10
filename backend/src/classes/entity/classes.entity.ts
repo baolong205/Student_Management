@@ -30,7 +30,6 @@ export class Class {
   @OneToMany(() => Student, (student) => student.class)
   students?: Student[];
 
-  // Một lớp có thể có nhiều giáo viên dạy (các môn khác nhau)
   @ManyToMany(() => Teacher, (teacher) => teacher.classes)
   @JoinTable({
     name: 'teacher_classes',
