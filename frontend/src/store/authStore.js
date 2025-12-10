@@ -32,7 +32,7 @@ export const useAuthStore = create((set) => ({
     authApi.logout()
     set({ user: null, token: null, isLoggedIn: false })
   },
-  //Khoi tao lai khi load trang
+
   initAuth: () => {
     const token = localStorage.getItem('token')
     const user = localStorage.getItem('user')

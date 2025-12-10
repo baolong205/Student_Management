@@ -1,5 +1,5 @@
-// src/subjects/subjects.controller.ts
-import { Controller, Get, Post, Body, Param, Patch, Delete } from '@nestjs/common';
+
+import { Controller, Get, Post, Body, Param, Patch, Delete, Query } from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
@@ -36,5 +36,22 @@ export class SubjectsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.subjectsService.remove(id);
+  }
+
+  // ========== ENDPOINT MỚI ==========
+  
+  @Get(':id/enrollments')
+  async getSubjectEnrollments(@Param('id') id: string) {
+    return await this.subjectsService.getSubjectEnrollments(id);
+  }
+
+  @Get(':id/students')
+  async getSubjectStudents(@Param('id') id: string) {
+    return await this.subjectsService.getSubjectStudents(id);
+  }
+
+  @Get(':id/stats')
+  async getSubjectStats(@Param('id') id: string) {
+    return await this.subjectsService.getSubjectStats(id);
   }
 }

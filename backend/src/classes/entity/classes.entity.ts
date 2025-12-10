@@ -1,10 +1,6 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  OneToMany,
-} from 'typeorm';
+// src/classes/entity/classes.entity.ts
+
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Student } from '../../student/entity/student.entity';
 import { Teacher } from '../../teacher/entity/teacher.entity';
 
@@ -31,27 +27,26 @@ export class Class {
   @Column({ type: 'varchar', length: 100 })
   major: string;
 
- // ========== QUAN HỆ VỚI SINH VIÊN ==========
-  // Một lớp có nhiều sinh viên
   @OneToMany(() => Student, (student) => student.class)
-  students?: Student[]; // Danh sách sinh viên trong lớp
+  students?: Student[];
 
-  // ========== QUAN HỆ VỚI GIÁO VIÊN ==========
-  // Một lớp có nhiều giáo viên (giáo viên bộ môn)
-  // Quan hệ ngược lại từ Teacher
-  @OneToMany(() => Teacher, (teacher) => teacher.class)
-  teachers?: Teacher[]; // Danh sách giáo viên dạy lớp này
-   // Thuộc tính tính toán: số sinh viên hiện tại
+  // Một lớp có thể có nhiều giáo viên dạy (các môn khác nhau)
+  @ManyToMany(() => Teacher, (teacher) => teacher.classes)
+  @JoinTable({
+    name: 'teacher_classes',
+    joinColumn: { name: 'class_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'teacher_id', referencedColumnName: 'id' },
+  })
+  teachers?: Teacher[];
+
   get currentStudentCount(): number {
-    return this.students ? this.students.length : 0;
+    return this.students?.length || 0;
   }
 
-  // Thuộc tính tính toán: số giáo viên
   get teacherCount(): number {
-    return this.teachers ? this.teachers.length : 0;
+    return this.teachers?.length || 0;
   }
 
-  // Thuộc tính tính toán: tên đầy đủ của lớp
   get fullClassName(): string {
     return `${this.name} - Khóa ${this.enrollmentYear}`;
   }

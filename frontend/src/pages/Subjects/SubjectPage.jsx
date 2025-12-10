@@ -10,6 +10,7 @@ import { Search, Plus, Grid, List, Download, Filter } from "lucide-react";
 
 // Components
 import SubjectForm from './SubjectForm';
+import SubjectEditForm from './SubjectEditForm'; // Form edit riêng
 import SubjectTable from './SubjectTable';
 import SubjectCard from './SubjectCard';
 
@@ -17,28 +18,92 @@ import SubjectCard from './SubjectCard';
 import { useSubjects } from './hooks/useSubjects';
 
 const SubjectsPage = () => {
+  const [viewMode, setViewMode] = useState('table');
+  const [formMode, setFormMode] = useState('create'); // 'create' hoặc 'edit'
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Sử dụng hook subjects
   const {
     subjects,
     loading,
-    isFormOpen,
-    editingSubject,
-    searchTerm,
-    setSearchTerm,
-    handleOpenCreateForm,
-    handleOpenEditForm,
-    handleCloseForm,
-    handleSubmit,
-    handleDelete,
     fetchSubjects,
+    handleCreateSubject,
+    handleUpdateSubject,
+    handleDeleteSubject,
   } = useSubjects();
-  const [viewMode, setViewMode] = useState('table');
+
   // Load data khi component mount
   useEffect(() => {
     fetchSubjects();
   }, []);
 
+  // Lọc subjects theo search term
+  const filteredSubjects = subjects.filter(subject => {
+    if (!searchTerm) return true;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      subject.name?.toLowerCase().includes(searchLower) ||
+      subject.subjectCode?.toLowerCase().includes(searchLower) ||
+      subject.description?.toLowerCase().includes(searchLower)
+    );
+  });
+
   // Tính tổng tín chỉ
-  const totalCredits = subjects.reduce((sum, subject) => sum + subject.credits, 0);
+  const totalCredits = filteredSubjects.reduce((sum, subject) => sum + subject.credits, 0);
+
+  // Xử lý mở form tạo mới
+  const handleOpenCreateForm = () => {
+    setFormMode('create');
+    setSelectedSubject(null);
+    setIsFormOpen(true);
+  };
+
+  // Xử lý mở form chỉnh sửa
+  const handleOpenEditForm = (subject) => {
+    setFormMode('edit');
+    setSelectedSubject(subject);
+    setIsFormOpen(true);
+  };
+
+  // Xử lý đóng form
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setSelectedSubject(null);
+  };
+
+  // Xử lý submit form
+  const handleSubmit = async (formData) => {
+    try {
+      if (formMode === 'create') {
+        await handleCreateSubject(formData);
+      } else {
+        await handleUpdateSubject(selectedSubject.id, formData);
+      }
+      handleCloseForm();
+      fetchSubjects(); // Refresh danh sách
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+  };
+
+  // Xử lý xóa subject
+  const handleDelete = async (subjectId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa môn học này?')) {
+      try {
+        await handleDeleteSubject(subjectId);
+        fetchSubjects(); // Refresh danh sách
+      } catch (error) {
+        console.error('Error deleting subject:', error);
+      }
+    }
+  };
+
+  // Thống kê
+  const highCreditSubjects = filteredSubjects.filter(s => s.credits >= 4).length;
+  const lowCreditSubjects = filteredSubjects.filter(s => s.credits <= 2).length;
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,7 +138,7 @@ const SubjectsPage = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{subjects.length}</div>
+              <div className="text-2xl font-bold">{filteredSubjects.length}</div>
             </CardContent>
           </Card>
 
@@ -96,7 +161,7 @@ const SubjectsPage = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {subjects.length > 0 ? (totalCredits / subjects.length).toFixed(1) : 0}
+                {filteredSubjects.length > 0 ? (totalCredits / filteredSubjects.length).toFixed(1) : 0}
               </div>
             </CardContent>
           </Card>
@@ -108,7 +173,7 @@ const SubjectsPage = () => {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Tìm kiếm môn học..."
+                placeholder="Tìm kiếm theo tên, mã môn học..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -150,16 +215,28 @@ const SubjectsPage = () => {
             <TabsTrigger value="high-credit">
               Tín chỉ cao
               <Badge variant="secondary" className="ml-2">
-                {subjects.filter(s => s.credits >= 4).length}
+                {highCreditSubjects}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="low-credit">
               Tín chỉ thấp
               <Badge variant="secondary" className="ml-2">
-                {subjects.filter(s => s.credits <= 2).length}
+                {lowCreditSubjects}
               </Badge>
             </TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="all" className="mt-4">
+            {/* Content for all subjects */}
+          </TabsContent>
+          
+          <TabsContent value="high-credit" className="mt-4">
+            {/* Content for high credit subjects */}
+          </TabsContent>
+          
+          <TabsContent value="low-credit" className="mt-4">
+            {/* Content for low credit subjects */}
+          </TabsContent>
         </Tabs>
 
         {/* Nội dung chính */}
@@ -169,7 +246,7 @@ const SubjectsPage = () => {
               <div>
                 <CardTitle>Danh sách môn học</CardTitle>
                 <CardDescription>
-                  {viewMode === 'table' ? 'Dạng bảng' : 'Dạng thẻ'} • {subjects.length} môn học
+                  {viewMode === 'table' ? 'Dạng bảng' : 'Dạng thẻ'} • {filteredSubjects.length} môn học
                 </CardDescription>
               </div>
               <Badge variant="outline">
@@ -180,7 +257,7 @@ const SubjectsPage = () => {
           <CardContent>
             {viewMode === 'table' ? (
               <SubjectTable
-                subjects={subjects}
+                subjects={filteredSubjects}
                 loading={loading}
                 onEdit={handleOpenEditForm}
                 onDelete={handleDelete}
@@ -200,7 +277,7 @@ const SubjectsPage = () => {
                       </CardContent>
                     </Card>
                   ))
-                ) : subjects.length === 0 ? (
+                ) : filteredSubjects.length === 0 ? (
                   <div className="col-span-full text-center py-12">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                       <Search className="h-6 w-6 text-muted-foreground" />
@@ -209,9 +286,15 @@ const SubjectsPage = () => {
                     <p className="text-sm text-muted-foreground mt-1">
                       {searchTerm ? 'Thử tìm kiếm với từ khóa khác' : 'Hãy thêm môn học đầu tiên'}
                     </p>
+                    {!searchTerm && (
+                      <Button onClick={handleOpenCreateForm} className="mt-4">
+                        <Plus className="mr-2 h-4 w-4" />
+                        Thêm môn học đầu tiên
+                      </Button>
+                    )}
                   </div>
                 ) : (
-                  subjects.map((subject) => (
+                  filteredSubjects.map((subject) => (
                     <SubjectCard
                       key={subject.id}
                       subject={subject}
@@ -225,13 +308,23 @@ const SubjectsPage = () => {
           </CardContent>
         </Card>
 
-        {/* Form Modal */}
-        <SubjectForm
-          open={isFormOpen}
-          onClose={handleCloseForm}
-          onSubmit={handleSubmit}
-          editingSubject={editingSubject}
-        />
+        {/* Form Modals */}
+        {formMode === 'create' ? (
+          <SubjectForm
+            open={isFormOpen}
+            onClose={handleCloseForm}
+            onSubmit={handleSubmit}
+            isLoading={loading}
+          />
+        ) : (
+          <SubjectEditForm
+            open={isFormOpen}
+            onClose={handleCloseForm}
+            onSubmit={handleSubmit}
+            subject={selectedSubject}
+            isLoading={loading}
+          />
+        )}
       </div>
     </div>
   );

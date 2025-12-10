@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+// src/subjects/entity/subject.entity.ts
+
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Enrollment } from '../../enrollments/entity/enrollment.entity';
 import { Teacher } from '../../teacher/entity/teacher.entity';
 
@@ -8,45 +10,46 @@ export class Subject {
   id: string;
 
   @Column({ unique: true })
-  name: string; // Tên môn học
+  name: string;
 
   @Column({ type: 'varchar', length: 20, unique: true, nullable: true })
-  subjectCode: string; // Mã môn học
+  subjectCode: string;
 
   @Column()
-  credits: number; // Số tín chỉ
+  credits: number;
 
   @Column({ type: 'text', nullable: true })
-  description: string; // Mô tả môn học
+  description: string;
 
-  // ========== THÊM 3 TRƯỜNG QUAN TRỌNG CHO TEACHER ==========
-  
   @Column({ type: 'boolean', default: true })
-  isActive: boolean; // Môn học có đang hoạt động không
-  
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  department: string; // Khoa/Bộ môn quản lý
-  
-  @Column({ type: 'int', nullable: true })
-  hoursPerWeek: number; // Số giờ dạy mỗi tuần
+  isActive: boolean;
 
-  // ========== QUAN HỆ VỚI ENROLLMENTS ==========
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  department: string;
+
+  @Column({ type: 'int', nullable: true })
+  hoursPerWeek: number;
+
+  // ========== QUAN HỆ ĐÚNG ==========
+
   @OneToMany(() => Enrollment, (enrollment) => enrollment.subject)
   enrollments: Enrollment[];
 
-  // ========== QUAN HỆ VỚI TEACHERS ==========
-  @OneToMany(() => Teacher, (teacher) => teacher.subject)
+  // Một môn có thể do nhiều giáo viên dạy
+  @ManyToMany(() => Teacher, (teacher) => teacher.subjects)
+  @JoinTable({
+    name: 'teacher_subjects', // bảng trung gian
+    joinColumn: { name: 'subject_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'teacher_id', referencedColumnName: 'id' },
+  })
   teachers: Teacher[];
 
-  // ========== PHƯƠNG THỨC HELPER ĐƠN GIẢN ==========
-  
-  // Lấy thông tin môn học
+  // Helper
   get info(): string {
     return `${this.name} (${this.credits} tín chỉ)`;
   }
 
-  // Kiểm tra môn có giáo viên dạy không
   get hasTeachers(): boolean {
-    return this.teachers && this.teachers.length > 0;
+    return this.teachers?.length > 0;
   }
 }

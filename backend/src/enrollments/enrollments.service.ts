@@ -43,4 +43,19 @@ export class EnrollmentsService {
     await this.enrollmentRepo.remove(record);
     return { message: 'Đã xóa bản ghi điểm thành công' };
   }
+   async findByStudentId(studentId: string) {
+    return await this.enrollmentRepo.find({
+      where: { studentId },
+      relations: ['subject'], // Load thông tin môn học
+      order: { enrolledAt: 'DESC' }
+    });
+  }
+
+  async findBySubjectId(subjectId: string) {
+    return await this.enrollmentRepo.find({
+      where: { subjectId },
+      relations: ['student'],
+      order: { totalScore: 'DESC' }
+    });
+  }
 }

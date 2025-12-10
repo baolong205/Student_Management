@@ -11,7 +11,7 @@ export class StudentService {
   constructor(
     @InjectRepository(Student)
     private studentsRepository: Repository<Student>,
-  ) {}
+  ) { }
 
   async create(createStudentDto: CreateStudentDto): Promise<Student> {
     //Check xem co trung sinh vien khong
@@ -36,14 +36,16 @@ export class StudentService {
   async findOne(id: string): Promise<Student> {
     const student = await this.studentsRepository.findOne({
       where: { id },
-      relations: ['class','enrollments'],
+      relations: ['class', 'enrollments'],
     });
     if (!student) {
       throw new NotFoundException(`Sinh viên với ID ${id} không tồn tại`);
     }
     return student;
   }
-
+  async count(): Promise<number> {
+    return await this.studentsRepository.count();
+  }
   async update(id: string, updateStudentDto: UpdateStudentDto): Promise<Student> {
     await this.studentsRepository.update(id, updateStudentDto);
     return this.findOne(id);

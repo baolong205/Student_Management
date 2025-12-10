@@ -1,13 +1,14 @@
 import { NavLink } from "react-router-dom";
-import { Home, GraduationCap, School, BookOpen, BarChart3 } from "lucide-react";
+import { Home, GraduationCap, School, BookOpen, BarChart3, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", icon: Home, label: "Dashboard" },
+  { to: "/users", icon: Users, label: "Quản lý người dùng" },
   { to: "/students", icon: GraduationCap, label: "Sinh viên" },
   { to: "/classes", icon: School, label: "Lớp học" },
   { to: "/subjects", icon: BookOpen, label: "Môn học" },
-  { to: "/enrollment", icon: BarChart3, label: "Quản lý điểm" },
+  { to: "/teachers", icon: BarChart3, label: "Giảng viên" },
 ];
 
 export default function Sidebar() {
@@ -16,7 +17,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b">
         <h2 className="text-3xl font-bold text-primary">UDA_ST</h2>
-        
+
       </div>
 
       {/* Menu */}

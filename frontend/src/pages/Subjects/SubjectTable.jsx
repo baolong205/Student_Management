@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Pencil, Trash2, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const SubjectTable = ({ subjects, onEdit, onDelete, onView, loading }) => {
   if (loading) {
@@ -103,6 +104,7 @@ const SubjectTable = ({ subjects, onEdit, onDelete, onView, loading }) => {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end space-x-2">
+                  <Link to={`/subjects/${subject.id}`}>  
                   <Button
                     variant="ghost"
                     size="icon"
@@ -110,7 +112,8 @@ const SubjectTable = ({ subjects, onEdit, onDelete, onView, loading }) => {
                     title="Xem chi tiết"
                   >
                     <Eye className="h-4 w-4" />
-                  </Button>
+                  </Button></Link>
+
                   <Button
                     variant="ghost"
                     size="icon"
@@ -119,7 +122,7 @@ const SubjectTable = ({ subjects, onEdit, onDelete, onView, loading }) => {
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  
+
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -133,10 +136,13 @@ const SubjectTable = ({ subjects, onEdit, onDelete, onView, loading }) => {
                         <Pencil className="mr-2 h-4 w-4" />
                         Chỉnh sửa
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onView && onView(subject)}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Xem chi tiết
-                      </DropdownMenuItem>
+                      <Link to={`/subjects/${subject.id}`}>
+                        <DropdownMenuItem onClick={() => onView && onView(subject)}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Xem chi tiết
+                        </DropdownMenuItem></Link>
+
+
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive"
