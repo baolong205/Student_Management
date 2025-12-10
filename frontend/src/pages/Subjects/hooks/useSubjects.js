@@ -1,4 +1,4 @@
-// src/pages/subjects/hooks/useSubjects.js
+
 import { useState } from 'react';
 import { useSubjectStore } from '@/store/subjectStore';
 import toast from 'react-hot-toast';
@@ -7,77 +7,73 @@ export const useSubjects = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  const { 
-    subjects, 
-    loading, 
-    fetchSubjects, 
-    createSubject, 
-    updateSubject, 
-    deleteSubject 
+
+  const {
+    subjects,
+    loading,
+    fetchSubjects,
+    createSubject,
+    updateSubject,
+    deleteSubject
   } = useSubjectStore();
 
-  // Mở form tạo mới
   const handleOpenCreateForm = () => {
     setEditingSubject(null);
     setIsFormOpen(true);
+    return true; 
   };
-
-  // Mở form chỉnh sửa
   const handleOpenEditForm = (subject) => {
     setEditingSubject(subject);
     setIsFormOpen(true);
+    return true;
   };
-
-  // Đóng form
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingSubject(null);
   };
-
-  // Xử lý tạo/cập nhật
-  const handleSubmit = async (data) => {
+  const handleCreateSubject = async (data) => {
     try {
-      if (editingSubject) {
-        await updateSubject(editingSubject.id, data);
-        toast.success('Cập nhật môn học thành công!');
-      } else {
-        await createSubject(data);
-        toast.success('Thêm môn học thành công!');
-      }
-      handleCloseForm();
+      const result = await createSubject(data);
+      toast.success('Thêm môn học thành công!');
+      return result;
     } catch (error) {
-      console.error(error);
+      toast.error('Lỗi khi thêm môn học');
+      throw error;
     }
   };
-
-  // Xử lý xóa
-  const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa môn học này?')) {
-      await deleteSubject(id);
+  const handleUpdateSubject = async (id, data) => {
+    try {
+      const result = await updateSubject(id, data);
+      toast.success('Cập nhật môn học thành công!');
+      return result;
+    } catch (error) {
+      toast.error('Lỗi khi cập nhật môn học');
+      throw error;
     }
   };
-
-  // Lọc môn học theo từ khóa
-  const filteredSubjects = subjects.filter(subject =>
-    subject.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  const handleDeleteSubject = async (id) => {
+    try {
+      const result = await deleteSubject(id);
+      toast.success('Xóa môn học thành công!');
+      return result;
+    } catch (error) {
+      toast.error('Lỗi khi xóa môn học');
+      throw error;
+    }
+  };
   return {
-    // State
-    subjects: filteredSubjects,
+    subjects,
     loading,
     isFormOpen,
     editingSubject,
     searchTerm,
-    
-    // Actions
     setSearchTerm,
+    fetchSubjects,
+    handleCreateSubject,
+    handleUpdateSubject,
+    handleDeleteSubject,
     handleOpenCreateForm,
     handleOpenEditForm,
     handleCloseForm,
-    handleSubmit,
-    handleDelete,
-    fetchSubjects,
   };
 };

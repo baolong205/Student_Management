@@ -8,12 +8,12 @@ import { ArrowLeft, Edit, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 
-import StudentInfoCard from "./StudentInfoCard";
-import StudentEnrollments from "./StudentEnrollments";
-import StudentStats from "./StudentStats";
-import AddEnrollmentDialog from "./AddEnrollmentDialog";
-import LoadingState from "../../../components/LoadingState";
-import ErrorState from "../../../components/ErrorState";
+import StudentInfoCard from "../../components/StudentDetail/StudentInfoCard";
+import StudentEnrollments from "../../components/StudentDetail/StudentEnrollments";
+import StudentStats from "../../components/StudentDetail/StudentStats";
+import AddEnrollmentDialog from "../../components/StudentDetail/AddEnrollmentDialog";
+import LoadingState from "../../components/LoadingState";
+import ErrorState from "../../components/ErrorState";
 
 export default function StudentDetail() {
   const { id } = useParams();

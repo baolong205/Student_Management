@@ -23,7 +23,7 @@ const SubjectsPage = () => {
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Sử dụng hook subjects
   const {
     subjects,
@@ -42,7 +42,7 @@ const SubjectsPage = () => {
   // Lọc subjects theo search term
   const filteredSubjects = subjects.filter(subject => {
     if (!searchTerm) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
     return (
       subject.name?.toLowerCase().includes(searchLower) ||
@@ -225,15 +225,15 @@ const SubjectsPage = () => {
               </Badge>
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="all" className="mt-4">
             {/* Content for all subjects */}
           </TabsContent>
-          
+
           <TabsContent value="high-credit" className="mt-4">
             {/* Content for high credit subjects */}
           </TabsContent>
-          
+
           <TabsContent value="low-credit" className="mt-4">
             {/* Content for low credit subjects */}
           </TabsContent>
@@ -309,22 +309,13 @@ const SubjectsPage = () => {
         </Card>
 
         {/* Form Modals */}
-        {formMode === 'create' ? (
-          <SubjectForm
-            open={isFormOpen}
-            onClose={handleCloseForm}
-            onSubmit={handleSubmit}
-            isLoading={loading}
-          />
-        ) : (
-          <SubjectEditForm
-            open={isFormOpen}
-            onClose={handleCloseForm}
-            onSubmit={handleSubmit}
-            subject={selectedSubject}
-            isLoading={loading}
-          />
-        )}
+        <SubjectForm
+          open={isFormOpen}
+          onClose={handleCloseForm}
+          onSubmit={handleSubmit}
+          editingSubject={selectedSubject}
+          isLoading={loading}
+        />
       </div>
     </div>
   );

@@ -7,10 +7,10 @@ import { Loader2, Plus, Download, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 
 
-import StudentCard from "../Student/StudentCard";
-import StudentFilters from "../Student/StudentFilters";
-import AddEditStudentDialog from "../Student/AddEditStudentDialog";
-import DeleteStudentDialog from "../Student/DeleteStudentDialog";
+import StudentCard from "../../components/Student/StudentCard";
+import StudentFilters from "../../components/Student/StudentFilters";
+import AddEditStudentDialog from "../../components/Student/AddEditStudentDialog";
+import DeleteStudentDialog from "../../components/Student/DeleteStudentDialog";
 import { Link } from "react-router-dom";
 export default function StudentPage() {
   const { students, loading, fetchStudents, createStudent, updateStudent, deleteStudent } = useStudentStore();
