@@ -1,3 +1,4 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import LoginPage from "./pages/Auth/LoginPage";
@@ -5,11 +6,12 @@ import ClassesPage from "./pages/Classes/ClassesPage";
 import StudentPage from "./pages/Students/Student/StudentPage";
 import SubjectsPage from "./pages/Subjects/SubjectPage";
 import StudentDetail from "./pages/Students/StudentDetail/StudentDetail";
-import TeacherDashboard from "./pages/Teacher/TeacherDashboard";
+import TeacherDashboard from "./pages/Teacher/TeacherDashboard"; // Dashboard dùng modal
 import TeacherDetail from "./pages/Teacher/TeacherDetail";
-import TeacherForm from "./pages/Teacher/TeacherForm"; // Thêm import này
-import SubjectForm from "./pages/Subjects/SubjectForm";
 import SubjectDetail from "./pages/Subjects/SubjectDetail/SubjectDetail";
+import UserPage from "./pages/User/UserPage";
+import DashboardPage from "./pages/Dashboard/AdminDashboard";
+// XÓA các import TeacherForm, SubjectForm không dùng route
 
 function App() {
   return (
@@ -21,16 +23,15 @@ function App() {
           <Route path="students" element={<StudentPage />} />
           <Route path="students/:id" element={<StudentDetail />} />
           <Route path="subjects" element={<SubjectsPage />} />
+          <Route path="" element={<DashboardPage />} />
 
-          {/* Teacher Routes */}
           <Route path="teachers" element={<TeacherDashboard />} />
-          <Route path="teachers/new" element={<TeacherForm />} /> {/* Thêm route này */}
           <Route path="teachers/:id" element={<TeacherDetail />} />
-          <Route path="teachers/edit/:id" element={<TeacherForm />} /> {/* Sửa lại */}
+
+
           <Route path="subjects/:id" element={<SubjectDetail />} />
-          <Route path="subjects/edit/:id" element={<SubjectForm editMode />} />
-          {/* Các route khác */}
-          {/* <Route path="dashboard" element={<DashboardPage />} /> */}
+
+          <Route path="/users" element={<UserPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

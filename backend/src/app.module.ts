@@ -11,6 +11,7 @@ import { StudentsModule } from './student/student.module';
 import { SubjectsModule } from './subjects/subjects.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { TeacherModule } from './teacher/teacher.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -31,6 +32,7 @@ import { TeacherModule } from './teacher/teacher.module';
     SubjectsModule,
     EnrollmentsModule,
     TeacherModule,
+    DashboardModule
   ],
 })
 export class AppModule {}

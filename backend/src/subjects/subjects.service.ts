@@ -16,7 +16,7 @@ export class SubjectsService {
 
     @InjectRepository(Enrollment)
     private readonly enrollmentRepository: Repository<Enrollment>,
-    
+
   ) { }
 
   // 1. Tạo môn học mới
@@ -89,7 +89,7 @@ export class SubjectsService {
 
     return await this.enrollmentRepository.find({
       where: { subjectId: id },
-      relations: ['student'],
+      relations: ['student', 'student.class'],
       order: { enrolledAt: 'DESC' }
     });
   }
@@ -100,6 +100,7 @@ export class SubjectsService {
 
     return enrollments.map(enrollment => ({
       ...enrollment.student,
+      class: enrollment.student.class,
       enrollmentId: enrollment.id,
       scores: {
         attendanceScore: enrollment.attendanceScore,

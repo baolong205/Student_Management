@@ -1,18 +1,18 @@
 
-import { IsString, IsOptional, IsEnum, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, MinLength, IsEnum, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
-  @IsString({ message: 'Tên đăng nhập phải là chuỗi' })
-  @MinLength(4, { message: 'Tên đăng nhập ít nhất 4 ký tự' })
+  @IsString()
+  @IsNotEmpty({ message: 'Tên đăng nhập không được để trống' })
+  @MinLength(4, { message: 'Tên đăng nhập phải có ít nhất 4 ký tự' })
   username: string;
 
-  @IsString({ message: 'Mật khẩu phải là chuỗi' })
-  @MinLength(6, { message: 'Mật khẩu ít nhất 6 ký tự' })
+  @IsString()
+  @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   password: string;
 
+  @IsEnum(['admin', 'viewer'])
   @IsOptional()
-  @IsEnum(['admin', 'viewer'], {
-    message: 'Vai trò phải là "admin" hoặc "viewer"',
-  })
   role?: 'admin' | 'viewer';
 }

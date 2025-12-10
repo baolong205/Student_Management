@@ -1,4 +1,4 @@
-// src/store/teacherStore.js
+
 import { create } from "zustand";
 import { teacherApi } from "@/api/teacherApi";
 import toast from "react-hot-toast";
@@ -8,7 +8,7 @@ export const useTeacherStore = create((set, get) => ({
   currentTeacher: null,
   loading: false,
   error: null,
-
+  isFetchingDetail: false,
   // Lấy tất cả giáo viên
   fetchTeachers: async () => {
     set({ loading: true, error: null });
@@ -22,15 +22,34 @@ export const useTeacherStore = create((set, get) => ({
     }
   },
 
-  // Lấy chi tiết một giáo viên
   fetchTeacherDetail: async (id) => {
-    set({ loading: true });
+    const state = get();
+
+    // Nếu đang fetch hoặc đã có currentTeacher với ID này, không fetch lại
+    if (state.isFetchingDetail || (state.currentTeacher?.id === id && !state.loading)) {
+      console.log("store: Skipping fetch - already fetching or has data");
+      return state.currentTeacher;
+    }
+
+    set({ loading: true, isFetchingDetail: true, error: null });
     try {
+      console.log("store: Fetching teacher detail for ID:", id);
       const teacher = await teacherApi.getOneTeacher(id);
-      set({ currentTeacher: teacher, loading: false });
+      console.log("store: Teacher detail received:", teacher);
+
+      set({
+        currentTeacher: teacher,
+        loading: false,
+        isFetchingDetail: false
+      });
       return teacher;
     } catch (err) {
-      set({ loading: false });
+      console.error("store: Error in fetchTeacherDetail:", err);
+      set({
+        loading: false,
+        isFetchingDetail: false,
+        error: err.response?.data?.message || err.message
+      });
       toast.error("Không tìm thấy giáo viên!");
       throw err;
     }

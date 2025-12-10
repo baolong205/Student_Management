@@ -1,5 +1,5 @@
 // src/components/teachers/TeacherDetail.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTeacherStore } from "@/store/teacherStore";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+// Sửa import này - có thể có 2 trường hợp:
+// Trường hợp 1: Nếu file TeacherEditForm nằm trong cùng thư mục
+import TeacherEditForm from "./TeacherEditForm";
+// Trường hợp 2: Nếu file nằm ở pages
+// import TeacherEditForm from "@/pages/Teacher/TeacherEditForm";
 import {
   Mail,
   Phone,
@@ -22,13 +27,27 @@ import {
 const TeacherDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentTeacher, fetchTeacherDetail, loading } = useTeacherStore();
+  const { currentTeacher, fetchTeacherDetail, loading, updateTeacher } = useTeacherStore();
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
     if (id) {
       fetchTeacherDetail(id);
     }
   }, [id]);
+
+  const handleEditSuccess = async (formData) => {
+    try {
+      if (id) {
+        await updateTeacher(id, formData);
+        // Refresh teacher data
+        await fetchTeacherDetail(id);
+      }
+      setShowEditModal(false);
+    } catch (error) {
+      // Error đã được xử lý trong store
+    }
+  };
 
   if (loading) {
     return <TeacherDetailSkeleton />;
@@ -69,7 +88,7 @@ const TeacherDetail = () => {
             <p className="text-muted-foreground">Thông tin chi tiết giáo viên</p>
           </div>
         </div>
-        <Button onClick={() => navigate(`/teachers/edit/${currentTeacher.id}`)}>
+        <Button onClick={() => setShowEditModal(true)}>
           Chỉnh sửa
         </Button>
       </div>
@@ -224,6 +243,15 @@ const TeacherDetail = () => {
           </Card>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <TeacherEditForm
+        open={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        teacherId={currentTeacher.id}
+        onSubmit={handleEditSuccess}
+        isLoading={loading}
+      />
     </div>
   );
 };
